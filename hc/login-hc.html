@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dasaria HRIS — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#2563EB; --primary-dark:#1D4ED8; --primary-light:#EFF6FF;
+    --gray-50:#F8FAFC; --gray-200:#E2E8F0; --gray-300:#CBD5E1; --gray-400:#94A3B8;
+    --gray-500:#64748B; --gray-700:#334155; --gray-900:#0F172A;
+    --red:#DC2626; --red-bg:#FEE2E2;
+    --radius:14px; --radius-sm:8px;
+    --shadow-lg:0 12px 32px rgba(15,23,42,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:var(--gray-50);font-family:'Inter','Segoe UI',Arial,sans-serif;color:var(--gray-900);}
+  .card{width:380px;max-width:92vw;background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);padding:32px 28px;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+  .brand .name{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.3px;}
+  h1{font-size:17px;font-weight:800;margin:0 0 4px;}
+  .sub{font-size:12.5px;color:var(--gray-500);margin-bottom:22px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:6px;}
+  .field input{width:100%;border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:10px 12px;
+    font-size:13.5px;font-family:inherit;color:var(--gray-900);background:#fff;}
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:42px;}
+  .password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;
+    color:var(--gray-500);cursor:pointer;padding:4px;line-height:0;}
+  .password-toggle:hover{color:var(--primary);}
+  .field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .btn{width:100%;border:none;border-radius:var(--radius-sm);padding:11px 16px;font-weight:700;
+    font-size:13.5px;cursor:pointer;background:var(--primary);color:#fff;font-family:inherit;margin-top:6px;}
+  .btn:hover{background:var(--primary-dark);}
+  .btn:disabled{opacity:.6;cursor:not-allowed;}
+  .error{background:var(--red-bg);color:#991B1B;border-radius:var(--radius-sm);padding:9px 12px;
+    font-size:12.5px;font-weight:600;margin-bottom:14px;display:none;}
+  .error.show{display:block;}
+  .notice{background:var(--primary-light);color:var(--primary-dark);border-radius:var(--radius-sm);
+    padding:12px 14px;font-size:12.5px;line-height:1.6;}
+  .forgot-link{display:block;text-align:right;margin-top:10px;color:var(--primary);font-size:12.5px;font-weight:600;text-decoration:none;}
+  .forgot-link:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 38 38" fill="none">
+        <circle cx="13" cy="13" r="12" fill="#10b981"/>
+        <circle cx="25" cy="13" r="12" fill="#3b82f6" opacity="0.85"/>
+        <circle cx="13" cy="25" r="12" fill="#f97316" opacity="0.85"/>
+        <circle cx="25" cy="25" r="12" fill="#8b5cf6" opacity="0.85"/>
+      </svg>
+      <div class="name">Dasaria HRIS</div>
+    </div>
+
+    <div id="login-configured">
+      <h1>Masuk ke akun Anda</h1>
+      <div class="sub">Khusus staf Human Capital.</div>
+      <div class="error" id="login-error"></div>
+      <form id="login-form">
+        <div class="field"><label>Email</label><input type="email" id="login-email" required autocomplete="username"></div>
+        <div class="field"><label>Kata Sandi</label><div class="password-wrap"><input type="password" id="login-password" required autocomplete="current-password"><button class="password-toggle" type="button" onclick="togglePasswordVisibility('login-password', this)" aria-label="Tampilkan password"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div></div>
+        <button class="btn" type="submit" id="login-submit">Masuk</button>
+      </form>
+      <a class="forgot-link" href="#" id="forgot-password">Lupa password?</a>
+      <div class="notice" id="reset-success" style="display:none;margin-top:14px;">Jika email terdaftar, link reset password telah dikirim. Periksa inbox dan folder spam.</div>
+    </div>
+
+    <div id="login-not-configured" style="display:none;">
+      <h1>Mode demo</h1>
+      <div class="notice">Project Firebase belum terhubung sepenuhnya untuk login. Halaman HC masih bisa dibuka & dicoba dengan data contoh (localStorage).</div>
+      <button class="btn" style="margin-top:16px;" onclick="location.href='dashboard-hc.html'">Kembali ke Dashboard</button>
+    </div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  if (!isConfigured) {
+    document.getElementById('login-configured').style.display = 'none';
+    document.getElementById('login-not-configured').style.display = 'block';
+  } else {
+    dasariaInitFirebase();
+
+    var params = new URLSearchParams(location.search);
+    var next = params.get('next') || 'rekrutmen.html';
+    var hasGuardRedirect = params.has('next');
+
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user && hasGuardRedirect) location.href = next;
+    });
+
+    var form = document.getElementById('login-form');
+    var errorBox = document.getElementById('login-error');
+    var submitBtn = document.getElementById('login-submit');
+    var forgotLink = document.getElementById('forgot-password');
+    var resetSuccess = document.getElementById('reset-success');
+
+    var emailInput = document.getElementById('login-email');
+    var passwordInput = document.getElementById('login-password');
+    if (emailInput && !emailInput.value) emailInput.value = 'admin@dasaria-lokal.test';
+    if (passwordInput && !passwordInput.value) passwordInput.value = 'lokal12345';
+
+    window.togglePasswordVisibility = function (inputId, button) {
+      var input = document.getElementById(inputId);
+      var visible = input.type === 'text';
+      input.type = visible ? 'password' : 'text';
+      button.textContent = visible ? '◉' : '◉';
+      button.setAttribute('aria-label', visible ? 'Tampilkan password' : 'Sembunyikan password');
+    };
+
+    var ERROR_MESSAGES = {
+      'auth/invalid-email': 'Format email tidak valid.',
+      'auth/user-disabled': 'Akun ini dinonaktifkan. Hubungi admin HC.',
+      'auth/user-not-found': 'Email atau kata sandi salah.',
+      'auth/wrong-password': 'Email atau kata sandi salah.',
+      'auth/invalid-credential': 'Email atau kata sandi salah.',
+      'auth/too-many-requests': 'Terlalu banyak percobaan gagal. Coba lagi beberapa saat lagi.',
+      'auth/operation-not-allowed': 'Login Email/Password belum diaktifkan di Firebase Console (Authentication → Sign-in method).'
+    };
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errorBox.classList.remove('show');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Memproses…';
+
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(function () { location.href = next; })
+        .catch(function (err) {
+          errorBox.textContent = ERROR_MESSAGES[err.code] || ('Gagal masuk: ' + err.message);
+          errorBox.classList.add('show');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Masuk';
+        });
+    });
+
+    forgotLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      errorBox.classList.remove('show');
+      resetSuccess.style.display = 'none';
+      var email = document.getElementById('login-email').value.trim();
+      if (!email) {
+        errorBox.textContent = 'Masukkan email terlebih dahulu untuk menerima link reset password.';
+        errorBox.classList.add('show');
+        document.getElementById('login-email').focus();
+        return;
+      }
+      forgotLink.textContent = 'Mengirim link…';
+      forgotLink.style.pointerEvents = 'none';
+      firebase.auth().sendPasswordResetEmail(email)
+        .then(function () {
+          resetSuccess.style.display = 'block';
+        })
+        .catch(function (err) {
+          var resetMessages = {
+            'auth/invalid-email': 'Format email tidak valid.',
+            'auth/user-not-found': 'Email tidak ditemukan pada project Firebase ini.',
+            'auth/too-many-requests': 'Terlalu banyak permintaan. Coba lagi beberapa saat lagi.'
+          };
+          errorBox.textContent = resetMessages[err.code] || ('Gagal mengirim link reset: ' + err.message);
+          errorBox.classList.add('show');
+        })
+        .finally(function () {
+          forgotLink.textContent = 'Lupa password?';
+          forgotLink.style.pointerEvents = '';
+        });
+    });
+  }
+</script>
+</body>
+</html>

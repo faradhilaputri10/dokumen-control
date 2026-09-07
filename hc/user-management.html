@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dasaria HRIS — Manajemen Pengguna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#2563EB; --primary-dark:#1D4ED8; --primary-light:#EFF6FF; --primary-100:#DBEAFE;
+    --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0; --gray-300:#CBD5E1; --gray-400:#94A3B8;
+    --gray-500:#64748B; --gray-600:#475569; --gray-700:#334155; --gray-800:#1E293B; --gray-900:#0F172A;
+    --green:#16A34A; --green-bg:#DCFCE7; --amber:#D97706; --amber-bg:#FEF3C7; --red:#DC2626; --red-bg:#FEE2E2;
+    --purple:#7C3AED; --purple-bg:#EDE9FE;
+    --radius:12px; --radius-sm:8px;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06); --shadow-md:0 4px 12px rgba(15,23,42,.08); --shadow-lg:0 12px 32px rgba(15,23,42,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:14px;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .app{display:flex;min-height:100vh;}
+
+  /* ===== SIDEBAR ===== */
+  .sidebar{width:260px;background:#fff;border-right:1px solid var(--gray-200);flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;font-family:'Outfit','Segoe UI',Arial,sans-serif;transition:width .18s ease;}
+  .sidebar.collapsed{width:72px;}
+  .sidebar.collapsed .brand .name,.sidebar.collapsed .menu-label,.sidebar.collapsed .chev,.sidebar.collapsed .submenu{display:none;}
+  .sidebar.collapsed .menu-item{font-size:0;justify-content:center;gap:0;padding:10px 0;}
+  .sidebar.collapsed .brand{justify-content:center;padding:20px 0 16px;}
+  .sidebar.collapsed .sidebar-user{justify-content:center;}
+  .sidebar.collapsed .sidebar-user > div:not(.avatar){display:none;}
+  .brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;}
+  .brand .logo{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .brand .name{font-size:19px;font-weight:800;color:#101828;letter-spacing:-.3px;}
+  .menu-label{font-size:12px;font-weight:700;padding:4px 20px 8px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;}
+  .menu-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:2px 12px;border-radius:8px;cursor:pointer;color:#1f2937;text-decoration:none;font-size:14px;}
+  .menu-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
+  .menu-item .chev{margin-left:auto;width:14px;height:14px;transition:transform .15s;}
+  .menu-item.open .chev{transform:rotate(180deg);}
+  .menu-item:hover{background:#f7f8fa;}
+  .menu-item.active-parent{color:#465fff;font-weight:600;background:#ecf3ff;}
+  .submenu{padding-left:14px;}
+  .submenu .menu-item{padding:7px 12px 7px 34px;font-size:13.5px;margin:1px 12px;}
+  .sidebar-foot{margin-top:auto;padding:16px 20px;border-top:1px solid var(--gray-200);font-family:'Inter','Segoe UI',Arial,sans-serif;}
+  .sidebar-user{display:flex;align-items:center;gap:10px;}
+  .sidebar-user .avatar{width:34px;height:34px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;}
+  .sidebar-user .u-name{font-size:12.5px;font-weight:700;color:var(--gray-800);}
+  .sidebar-user .u-role{font-size:11px;color:var(--gray-500);}
+
+  /* ===== MAIN / TOPBAR ===== */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{min-height:64px;background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:60;}
+  .topbar-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+  .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--gray-200);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-600);flex-shrink:0;position:relative;}
+  .icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;}
+  .icon-btn:hover{background:var(--gray-50);}
+  .topbar-user{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px 4px 4px;border-radius:20px;}
+  .topbar-user:hover{background:var(--gray-50);}
+  .user-menu{position:absolute;top:44px;right:0;background:#fff;border:1px solid var(--gray-200);border-radius:10px;box-shadow:var(--shadow-md);min-width:210px;padding:8px;display:none;z-index:100;cursor:default;}
+  .user-menu.show{display:block;}
+  .user-menu-email{font-size:12px;color:var(--gray-500);padding:6px 10px 8px;border-bottom:1px solid var(--gray-100);margin-bottom:4px;word-break:break-all;}
+  .user-menu-item{padding:8px 10px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;color:var(--gray-700);}
+  .user-menu-item:hover{background:var(--gray-50);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .data-mode{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+  .data-mode.demo{background:#FEF3C7;color:#92400E;}
+  .data-mode.live{background:#DCFCE7;color:#166534;}
+  .data-mode.emulator{background:#DBEAFE;color:#1D4ED8;}
+
+  .content{padding:24px;flex:1;position:relative;}
+  .rk-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:16px;flex-wrap:wrap;}
+  .rk-head h1{font-size:26px;font-weight:800;margin:0;color:var(--gray-900);letter-spacing:-.2px;}
+  .rk-crumb{font-size:13px;color:var(--gray-400);}
+  .rk-crumb b{color:var(--gray-800);font-weight:600;}
+  .rk-panel{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px;}
+
+  .tabbar{display:flex;background:var(--gray-100);border-radius:10px;padding:4px;gap:4px;margin-bottom:18px;max-width:420px;}
+  .tab{padding:9px 16px;border-radius:7px;font-weight:600;cursor:pointer;color:var(--gray-600);font-size:13px;flex:1;text-align:center;}
+  .tab.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:16px;flex-wrap:wrap;}
+  .page-head h2{font-size:16px;font-weight:800;margin:0 0 4px;color:var(--gray-900);}
+  .page-head .sub{font-size:12.5px;color:var(--gray-500);}
+
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap;}
+  .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;flex-shrink:0;}
+  .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:var(--primary-dark);}
+  .btn-outline{background:#fff;border:1px solid var(--gray-300);color:var(--gray-700);} .btn-outline:hover{background:var(--gray-50);}
+  .btn-danger{background:#fff;border:1px solid var(--red);color:var(--red);} .btn-danger:hover{background:var(--red-bg);}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  .rk-table thead th{background:#0F2A57;color:#fff;text-align:left;padding:12px 14px;font-weight:600;white-space:nowrap;font-size:12px;}
+  .rk-table thead th:first-child{border-top-left-radius:8px;}
+  .rk-table thead th:last-child{border-top-right-radius:8px;}
+  .rk-table tbody td{padding:13px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;color:var(--gray-700);}
+  .rk-table tbody tr:last-child td{border-bottom:none;}
+  .rk-table tbody tr:hover{background:var(--gray-50);}
+  .muted{color:var(--gray-500);}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .chip i{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .chip-green{background:var(--green-bg);color:#166534;} .chip-green i{background:var(--green);}
+  .chip-gray{background:var(--gray-100);color:var(--gray-600);} .chip-gray i{background:var(--gray-400);}
+  .chip-blue{background:var(--primary-100);color:var(--primary-dark);} .chip-blue i{background:var(--primary);}
+
+  .u-cell{display:flex;align-items:center;gap:10px;}
+  .u-avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .u-name{font-weight:700;color:var(--gray-900);font-size:13px;}
+  .u-email{font-size:11.5px;color:var(--gray-500);}
+
+  .form-field label{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px;}
+  .form-field select,.form-field input[type=text],.form-field input[type=email],.form-field input[type=password]{width:100%;border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;font-family:inherit;color:var(--gray-800);background:#fff;}
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:40px!important;}
+  .password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--gray-500);cursor:pointer;padding:4px;line-height:1;}
+  .password-toggle:hover{color:var(--primary);}
+  .password-readonly{background:var(--gray-100)!important;color:var(--gray-500)!important;}
+  .form-field select:focus,.form-field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+  .field-hint{font-size:11px;color:var(--gray-500);margin-top:5px;line-height:1.5;}
+
+  .perm-table{width:100%;border-collapse:collapse;border:1px solid var(--gray-200);border-radius:8px;overflow:hidden;font-size:12.5px;}
+  .perm-table th,.perm-table td{padding:9px 10px;border-bottom:1px solid var(--gray-100);text-align:center;}
+  .perm-table tbody tr:last-child td{border-bottom:none;}
+  .perm-table thead th{background:var(--gray-50);color:var(--gray-600);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;}
+  .perm-table th:first-child,.perm-table td:first-child{text-align:left;font-weight:600;color:var(--gray-800);}
+  .perm-table input[type=checkbox]{width:16px;height:16px;cursor:pointer;}
+  .perm-table .perm-all-lbl{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;}
+
+  .note-banner{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:10px;padding:10px 14px;font-size:12px;line-height:1.6;}
+
+  .drawer-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;z-index:150;}
+  .drawer-overlay.show{display:block;}
+  .drawer{position:fixed;top:0;right:-460px;width:460px;max-width:94vw;height:100vh;background:#fff;box-shadow:var(--shadow-lg);z-index:151;transition:right .22s ease;display:flex;flex-direction:column;}
+  .drawer.show{right:0;}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--gray-200);}
+  .drawer-head h2{font-size:16px;font-weight:800;margin:0;}
+  .drawer-body{padding:22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
+  .drawer-foot{padding:16px 22px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:10px;}
+  .modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--gray-100);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-500);}
+  .modal-close svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.2;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gray-900);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .empty-state{text-align:center;padding:40px 20px;color:var(--gray-400);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+          <circle cx="13" cy="13" r="12" fill="#10b981"/>
+          <circle cx="25" cy="13" r="12" fill="#3b82f6" opacity="0.85"/>
+          <circle cx="13" cy="25" r="12" fill="#f97316" opacity="0.85"/>
+          <circle cx="25" cy="25" r="12" fill="#8b5cf6" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="name">Dasaria</div>
+    </div>
+    <div class="menu-label">Menu</div>
+    <a class="menu-item" href="dashboard-hc.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a class="menu-item" href="dashboard-hc.html#struktur">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><path d="M12 7.2V12M12 12L5 16.8M12 12l7 4.8"/></svg>
+      Struktur dan Organisasi
+    </a>
+    <div class="menu-item" onclick="toggleSubmenu('sub-master', this)">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+      Data Master Karyawan
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-master" style="display:none">
+      <a class="menu-item" href="data-karyawan.html#datakaryawan">Data Karyawan</a>
+      <a class="menu-item" href="data-karyawan.html#perpanjangankontrak">Perpanjangan Kontrak</a>
+      <a class="menu-item" href="data-karyawan.html#pengundurandiri">Pengunduran Diri</a>
+      <a class="menu-item" href="data-karyawan.html#perubahanorganisasi">Perubahan Organisasi</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-penggajian', this)">
+      <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2.2"/><path d="M2.5 10h19"/><circle cx="17" cy="14.3" r="1.4"/></svg>
+      Penggajian
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-penggajian" style="display:none">
+      <a class="menu-item" data-key="camd" href="arsitektur-kompensasi.html">Arsitektur Kompensasi</a>
+      <a class="menu-item" data-key="konfigurasi" href="konfigurasi-penggajian.html">Payroll Configuration</a>
+      <a class="menu-item" data-key="pph2126" href="pph21-pph26-setting.html">PPh21 &amp; 26 Setting</a>
+      <a class="menu-item" data-key="payroll-dashboard" href="dashboard-hc.html#payroll-dashboard">Dashboard Penggajian</a>
+      <a class="menu-item" data-key="payroll-karyawan" href="payroll-karyawan-detail.html">Data Payroll Karyawan</a>
+      <a class="menu-item" data-key="periode" href="dashboard-hc.html#periode">Periode Gajian</a>
+      <a class="menu-item" data-key="validasi" href="dashboard-hc.html#validasi">Persetujuan Periode Gajian</a>
+      <a class="menu-item" data-key="distribusi" href="dashboard-hc.html#distribusi">Distribusi Gaji &amp; Slip Gaji</a>
+      <a class="menu-item" data-key="kasbon" href="dashboard-hc.html#kasbon">Kasbon</a>
+      <a class="menu-item" data-key="rekonsiliasi" href="rekonsiliasi-payroll.html">Rekonsiliasi Payroll</a>
+      <a class="menu-item" data-key="pengajuan-offering" href="konfigurasi-penggajian.html#offering">Pengajuan Offering<span class="menu-badge" id="badge-pengajuan-offering"></span></a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-jenispengajuan', this)">
+      <svg viewBox="0 0 24 24"><path d="M6 2.5h9l4.5 4.5v14.5H6z"/><path d="M15 2.5V7h4.5M8.5 12.5h7M8.5 16h7"/></svg>
+      Pengajuan &amp; Persetujuan
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-jenispengajuan" style="display:none">
+      <a class="menu-item" href="pengajuan-persetujuan.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#pengajuan">Pengajuan</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#persetujuan">Persetujuan</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#riwayat">Riwayat</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-attendance', this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Jadwal &amp; Kehadiran
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-attendance" style="display:none">
+      <a class="menu-item" href="attendance-schedule.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="attendance-schedule.html#kehadiran">Kehadiran</a>
+      <a class="menu-item" href="attendance-schedule.html#jadwal">Jadwal Kerja</a>
+      <a class="menu-item" href="attendance-schedule.html#shift">Shift Management</a>
+      <a class="menu-item" href="attendance-schedule.html#kalender">Kalender Kerja</a>
+      <a class="menu-item" href="attendance-schedule.html#monitoring">Monitoring</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-document', this)">
+      <svg viewBox="0 0 24 24"><path d="M2 20h20M4 20V10l4-3 4 3v10M12 20V6l4-3 4 3v14"/></svg>
+      Dokumen
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-document" style="display:none">
+      <a class="menu-item" href="document.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="document.html#buatdokumen">Buat Dokumen</a>
+      <a class="menu-item" href="document.html#reviewriwayat">Review dan Riwayat<span class="menu-badge" id="badge-reviewriwayat"></span></a>
+      <a class="menu-item" href="document.html#mastertemplate">Master Template</a>
+      <a class="menu-item" href="document.html#kontroldokumen">Kontrol Dokumen</a>
+      <a class="menu-item" href="document.html#repository">Repository</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-rekrutmen', this)">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Rekrutmen
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-rekrutmen" style="display:none">
+      <a class="menu-item" href="rekrutmen.html#dashboard">Dashboard Rekrutmen</a>
+      <a class="menu-item" href="rekrutmen.html#lowongan">Lowongan</a>
+      <a class="menu-item" href="rekrutmen.html#kandidat">Kandidat</a>
+      <a class="menu-item" href="rekrutmen.html#konfigurasi">Konfigurasi Rekrutmen</a>
+      <a class="menu-item" href="rekrutmen.html#offering">Status Pengajuan</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-talent', this)">
+      <svg viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V17c0 1.1 2.7 3 6 3s6-1.9 6-3v-4.5"/></svg>
+      Manajemen Talenta
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-talent" style="display:none">
+      <a class="menu-item" href="learning-center-hc.html">Pusat Pembelajaran</a>
+      <a class="menu-item" href="performance-management-hc.html">Manajemen Performa</a>
+      <a class="menu-item" href="talent-assessment-hc.html">Pusat Assesment Talenta</a>
+    </div>
+    <a class="menu-item active-parent" href="user-management.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Manajemen Pengguna
+    </a>
+
+    <div class="sidebar-foot">
+      <div class="sidebar-user">
+        <div class="avatar">TA</div>
+        <div>
+          <div class="u-name">Tes Admin</div>
+          <div class="u-role">Head of Human Capital</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="icon-btn" onclick="toggleMainSidebar()" title="Lebarkan/kecilkan menu utama">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </div>
+      <div class="topbar-right">
+        <span class="data-mode" id="data-mode-badge">memuat…</span>
+        <div class="topbar-user" id="topbar-user-btn" onclick="toggleUserMenu()">
+          <div class="avatar" id="topbar-user-avatar">TA</div>
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="var(--gray-400)" fill="none" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          <div class="user-menu" id="topbar-user-menu">
+            <div class="user-menu-email" id="topbar-user-email">Mode Demo</div>
+            <div class="user-menu-item" onclick="event.stopPropagation(); DasariaAuth.logout();">Keluar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="rk-head">
+        <h1>Manajemen Pengguna</h1>
+        <div class="rk-crumb">Home <span>›</span> <b>Manajemen Pengguna</b></div>
+      </div>
+
+      <div class="note-banner" style="margin-bottom:16px;">
+        <b>Catatan:</b> Menambah pengguna baru di sini otomatis membuat akun login-nya juga (email + kata sandi yang Anda tentukan) — tidak perlu lagi ke Firebase Console. Mengedit pengguna yang sudah ada hanya mengubah data profil &amp; role, bukan kata sandinya.
+      </div>
+
+      <div class="tabbar" id="um-tabbar">
+        <div class="tab active" onclick="switchUmTab('pengguna', this)">Pengguna</div>
+        <div class="tab" onclick="switchUmTab('role', this)">Role &amp; Hak Akses</div>
+      </div>
+
+      <div class="rk-panel">
+        <!-- TAB: PENGGUNA -->
+        <div class="tab-panel active" id="um-pengguna">
+          <div class="page-head">
+            <div><h2>Pengguna</h2><div class="sub">Daftar staf yang punya akses ke sistem HRIS ini.</div></div>
+            <button class="btn btn-primary" onclick="openUserDrawer()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Tambah Pengguna</button>
+          </div>
+          <div class="table-wrap">
+            <table class="rk-table">
+              <thead><tr><th>Nama</th><th>Departemen</th><th>Role</th><th>Status</th><th></th></tr></thead>
+              <tbody id="user-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB: ROLE & HAK AKSES -->
+        <div class="tab-panel" id="um-role">
+          <div class="page-head">
+            <div><h2>Role &amp; Hak Akses</h2><div class="sub">Setiap role menentukan modul HRIS mana saja yang bisa diakses.</div></div>
+            <button class="btn btn-primary" onclick="openRoleDrawer()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Tambah Role</button>
+          </div>
+          <div class="table-wrap">
+            <table class="rk-table">
+              <thead><tr><th>Nama Role</th><th>Deskripsi</th><th>Jumlah Pengguna</th><th></th></tr></thead>
+              <tbody id="role-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DRAWER: USER ============ -->
+<div class="drawer-overlay" id="user-overlay" onclick="closeUserDrawer()"></div>
+<div class="drawer" id="user-drawer">
+  <div class="drawer-head">
+    <h2 id="user-drawer-title">Tambah Pengguna</h2>
+    <button class="modal-close" onclick="closeUserDrawer()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <input type="hidden" id="u-id">
+    <div class="form-field"><label>Nama Lengkap *</label><input type="text" id="u-nama" placeholder="e.g. Nanda Putri"></div>
+    <div class="form-field"><label>Email *</label><input type="email" id="u-email" placeholder="nama@dasaria.co.id"></div>
+    <div class="form-field" id="u-password-field">
+      <label id="u-password-label">Kata Sandi *</label>
+      <div class="password-wrap"><input type="password" id="u-password" placeholder="Minimal 6 karakter" autocomplete="new-password"><button class="password-toggle" type="button" onclick="togglePasswordVisibility('u-password', this)" aria-label="Tampilkan password"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div>
+      <div class="field-hint" id="u-password-hint">Dipakai staf ini untuk login pertama kali. Minimal <b>6 karakter</b>.</div>
+    </div>
+    <div class="form-field" id="u-current-password-field" style="display:none;">
+      <label>Password Saat Ini</label>
+      <input type="text" id="u-current-password" class="password-readonly" value="Tidak dapat ditampilkan oleh Firebase" readonly>
+      <div class="field-hint">Firebase tidak pernah mengirim password lama. Gunakan kolom Password Baru untuk melakukan reset.</div>
+    </div>
+    <div class="form-field"><label>Departemen *</label><input type="text" id="u-departemen" placeholder="e.g. Human Capital"></div>
+    <div class="form-field"><label>Role *</label><select id="u-role"></select></div>
+    <div class="form-field"><label>Status</label><select id="u-status"><option>Aktif</option><option>Nonaktif</option></select></div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-outline" onclick="closeUserDrawer()">Batal</button>
+    <button class="btn btn-primary" onclick="saveUser()">Simpan</button>
+  </div>
+</div>
+
+<!-- ============ DRAWER: ROLE ============ -->
+<div class="drawer-overlay" id="role-overlay" onclick="closeRoleDrawer()"></div>
+<div class="drawer" id="role-drawer">
+  <div class="drawer-head">
+    <h2 id="role-drawer-title">Tambah Role</h2>
+    <button class="modal-close" onclick="closeRoleDrawer()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <input type="hidden" id="r-id">
+    <div class="form-field"><label>Nama Role *</label><input type="text" id="r-nama" placeholder="e.g. Talent Acquisition"></div>
+    <div class="form-field"><label>Deskripsi</label><input type="text" id="r-deskripsi" placeholder="Ringkasan singkat cakupan role ini"></div>
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:8px;">Akses Halaman</label>
+      <div id="r-permissions"></div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-outline" onclick="closeRoleDrawer()">Batal</button>
+    <button class="btn btn-primary" onclick="saveRole()">Simpan Role</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data-layer.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+  var getCollection = DasariaData.getCollection;
+  var addDocument = DasariaData.addDocument;
+  var updateDocument = DasariaData.updateDocument;
+  var deleteDocument = DasariaData.deleteDocument;
+
+  dasariaRenderDataModeBadge();
+
+  // Reset password & hapus akun login MILIK ORANG LAIN tidak bisa lewat Firebase Auth client SDK
+  // sama sekali (batasan keamanan Firebase yang disengaja) -- harus lewat Apps Script Web App
+  // (service account, scope identitytoolkit). Sama persis polanya dengan OFFERING_SERVICES_URL
+  // di rekrutmen.html -- SATU deployment Apps Script yang sama menangani semuanya, tinggal
+  // pasang URL /exec-nya (setelah "Deploy > Manage deployments > New version") di sini juga.
+  var ADMIN_SERVICES_URL = 'https://script.google.com/macros/s/AKfycbwvKpgje4Q4IRmA-yxgXo8nw-0E7KtGowuiAOrD7c_erQfFRn2qYutd3fVQmwJ6s6bVcg/exec';
+  function adminServicesConfigured(){
+    return !!ADMIN_SERVICES_URL && ADMIN_SERVICES_URL.indexOf('PASTE_') !== 0;
+  }
+  async function callAdminService(action, payload){
+    if(!adminServicesConfigured()) throw new Error('Layanan ini belum dikonfigurasi (ADMIN_SERVICES_URL kosong) — hubungi admin.');
+    var idToken = await firebase.auth().currentUser.getIdToken();
+    var res = await fetch(ADMIN_SERVICES_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action: action, idToken: idToken }, payload))
+    });
+    var result = await res.json();
+    if(!result.ok) throw new Error(result.error || 'Terjadi kesalahan.');
+    return result;
+  }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+  window.toggleUserMenu = function(){ document.getElementById('topbar-user-menu').classList.toggle('show'); };
+  document.addEventListener('click', function(e){
+    var btn = document.getElementById('topbar-user-btn');
+    if(btn && !btn.contains(e.target)) document.getElementById('topbar-user-menu').classList.remove('show');
+  });
+  // Didelegasikan ke tombol resmi sidebar-toggle.js supaya state (localStorage key
+  // ess_hc_sidebar_collapsed) konsisten dgn semua halaman HC lain.
+  window.toggleMainSidebar = function(){
+    var btn = document.querySelector('.sb-toggle-btn');
+    if(btn) btn.click();
+  };
+  window.toggleSubmenu = function(id, el){
+    var sub = document.getElementById(id);
+    var open = sub.style.display !== 'none';
+    sub.style.display = open ? 'none' : 'block';
+    el.classList.toggle('open', !open);
+  };
+
+  window.switchUmTab = function(key, el){
+    document.querySelectorAll('#um-tabbar .tab').forEach(function(t){ t.classList.remove('active'); });
+    el.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById('um-' + key).classList.add('active');
+  };
+
+  // Modul HRIS yang bisa diberi akses per role — sesuaikan kalau ada modul baru.
+  var HRIS_MODULES = [
+    { key:'dashboard', label:'Dashboard' },
+    { key:'struktur', label:'Struktur dan Organisasi' },
+    { key:'data_karyawan', label:'Data Master Karyawan' },
+    { key:'penggajian', label:'Penggajian' },
+    { key:'pengajuan', label:'Pengajuan & Persetujuan' },
+    { key:'kehadiran', label:'Jadwal & Kehadiran' },
+    { key:'dokumen', label:'Dokumen' },
+    { key:'rekrutmen', label:'Rekrutmen' },
+    { key:'talenta', label:'Manajemen Talenta' },
+    { key:'user_management', label:'Manajemen Pengguna' }
+  ];
+
+  // Hak akses per halaman sekarang bukan cuma boleh/tidak, tapi granular per aksi CRUD --
+  // mis. TA cuma boleh Create+Read+Update kandidat, tidak boleh Delete data rekrutmen.
+  var PERM_ACTIONS = [
+    { key:'create', label:'Create' },
+    { key:'read', label:'Read' },
+    { key:'update', label:'Update' },
+    { key:'delete', label:'Delete' }
+  ];
+  function fullAccess(){ return PERM_ACTIONS.reduce(function(o,a){ o[a.key]=true; return o; }, {}); }
+  function accessOnly(actions){ return PERM_ACTIONS.reduce(function(o,a){ o[a.key] = actions.indexOf(a.key)!==-1; return o; }, {}); }
+
+  var seedRoles = [
+    { id:'role-admin', nama:'Admin HRIS', deskripsi:'Akses penuh ke seluruh modul HRIS.',
+      permissions: HRIS_MODULES.reduce(function(o,m){ o[m.key]=fullAccess(); return o; }, {}) },
+    { id:'role-ta', nama:'Talent Acquisition', deskripsi:'Fokus modul Rekrutmen.',
+      permissions: { dashboard:accessOnly(['read']), rekrutmen:accessOnly(['create','read','update']) } },
+    { id:'role-hc', nama:'HC Staff', deskripsi:'Data Master Karyawan & Penggajian.',
+      permissions: { dashboard:accessOnly(['read']), data_karyawan:accessOnly(['create','read','update']), penggajian:accessOnly(['read']), pengajuan:accessOnly(['create','read']), kehadiran:accessOnly(['read']) } }
+  ];
+  var seedUsers = [
+    { id:'user-1', nama:'Tes Admin', email:'admin@dasaria.co.id', departemen:'Human Capital', roleId:'role-admin', status:'Aktif' }
+  ];
+
+  var roles = [];
+  var users = [];
+
+  function roleById(id){ return roles.find(function(r){ return r.id===id; }); }
+
+  function renderUsers(){
+    document.getElementById('user-tbody').innerHTML = users.map(function(u){
+      var role = roleById(u.roleId);
+      var initials = (u.nama||'?').split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+      return '<tr>' +
+        '<td><div class="u-cell"><div class="u-avatar">' + initials + '</div><div><div class="u-name">' + u.nama + '</div><div class="u-email">' + u.email + '</div></div></div></td>' +
+        '<td>' + u.departemen + '</td>' +
+        '<td>' + (role ? role.nama : '<span class="muted">—</span>') + '</td>' +
+        '<td>' + (u.status==='Aktif' ? '<span class="chip chip-green"><i></i>Aktif</span>' : '<span class="chip chip-gray"><i></i>Nonaktif</span>') + '</td>' +
+        '<td style="display:flex;gap:6px;">' +
+          '<button class="btn btn-outline btn-sm" onclick="openUserDrawer(\'' + u.id + '\')">Edit</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteUser(\'' + u.id + '\')">Hapus</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('') || '<tr><td colspan="5"><div class="empty-state">Belum ada pengguna.</div></td></tr>';
+  }
+
+  window.openUserDrawer = function(id){
+    document.getElementById('u-role').innerHTML = roles.map(function(r){ return '<option value="' + r.id + '">' + r.nama + '</option>'; }).join('');
+    var u = id ? users.find(function(x){ return x.id===id; }) : null;
+    document.getElementById('user-drawer-title').textContent = u ? 'Edit Pengguna' : 'Tambah Pengguna';
+    document.getElementById('u-id').value = u ? u.id : '';
+    document.getElementById('u-nama').value = u ? u.nama : '';
+    document.getElementById('u-email').value = u ? u.email : '';
+    document.getElementById('u-password').value = '';
+    document.getElementById('u-current-password-field').style.display = u ? 'block' : 'none';
+    // Pengguna baru: kata sandi WAJIB (dipakai bikin akun). Edit pengguna lama: OPSIONAL --
+    // kosongkan kalau tidak ingin mengganti kata sandinya (lewat adminResetPassword, lihat saveUser()).
+    document.getElementById('u-password-label').textContent = u ? 'Kata Sandi Baru' : 'Kata Sandi *';
+    document.getElementById('u-password').placeholder = u ? 'Kosongkan jika tidak ingin mengubah' : 'Minimal 6 karakter';
+    document.getElementById('u-password-hint').innerHTML = u
+      ? 'Isi hanya kalau ingin <b>mengganti</b> kata sandi login staf ini. Minimal 6 karakter.'
+      : 'Dipakai staf ini untuk login pertama kali. Minimal <b>6 karakter</b>.';
+    document.getElementById('u-email').disabled = !!u; // email = identitas akun Auth, tidak diedit setelah dibuat
+    document.getElementById('u-departemen').value = u ? u.departemen : '';
+    document.getElementById('u-role').value = u ? u.roleId : (roles[0] ? roles[0].id : '');
+    document.getElementById('u-status').value = u ? u.status : 'Aktif';
+    document.getElementById('user-drawer').classList.add('show');
+    document.getElementById('user-overlay').classList.add('show');
+  };
+  window.togglePasswordVisibility = function(inputId, button){
+    var input = document.getElementById(inputId);
+    var visible = input.type === 'text';
+    input.type = visible ? 'password' : 'text';
+    button.setAttribute('aria-label', visible ? 'Tampilkan password' : 'Sembunyikan password');
+  };
+  window.closeUserDrawer = function(){
+    document.getElementById('user-drawer').classList.remove('show');
+    document.getElementById('user-overlay').classList.remove('show');
+  };
+  // Pesan error Firebase Auth versi Bahasa Indonesia -- sama polanya dengan login-hc.html.
+  var AUTH_CREATE_ERROR_MESSAGES = {
+    'auth/email-already-in-use': 'Email ini sudah dipakai akun lain.',
+    'auth/invalid-email': 'Format email tidak valid.',
+    'auth/weak-password': 'Kata sandi terlalu lemah -- minimal 6 karakter.',
+    'auth/operation-not-allowed': 'Login Email/Password belum diaktifkan di Firebase Console (Authentication → Sign-in method).'
+  };
+
+  window.saveUser = async function(){
+    var nama = document.getElementById('u-nama').value.trim();
+    var email = document.getElementById('u-email').value.trim();
+    var password = document.getElementById('u-password').value;
+    var departemen = document.getElementById('u-departemen').value.trim();
+    var id = document.getElementById('u-id').value;
+    if(!nama || !email || !departemen){ showToast('Lengkapi Nama, Email, dan Departemen dulu.'); return; }
+    if(!id){
+      // Aturan input kata sandi (sama dengan syarat minimum Firebase Auth): wajib diisi,
+      // minimal 6 karakter -- divalidasi di sini dulu supaya pesan errornya jelas dalam
+      // Bahasa Indonesia, tidak menunggu Firebase menolak duluan.
+      if(!password){ showToast('Isi Kata Sandi dulu untuk akun login pengguna baru ini.'); return; }
+      if(password.length < 6){ showToast('Kata sandi minimal 6 karakter.'); return; }
+    } else if(password && password.length < 6){
+      // Saat edit, password OPSIONAL -- tapi kalau diisi, aturan minimalnya tetap sama.
+      showToast('Kata sandi baru minimal 6 karakter.'); return;
+    }
+    var payload = {
+      nama: nama, email: email, departemen: departemen,
+      roleId: document.getElementById('u-role').value,
+      status: document.getElementById('u-status').value
+    };
+    var saveBtn = document.querySelector('#user-drawer .btn-primary');
+    saveBtn.disabled = true;
+    try {
+      if(id){
+        if(password && DasariaData.isConfigured) await callAdminService('adminResetPassword', { email: email, newPassword: password });
+        await updateDocument('users', id, payload);
+        var idx = users.findIndex(function(u){ return u.id===id; });
+        if(idx!==-1) users[idx] = Object.assign({id:id}, payload);
+      } else {
+        if(DasariaData.isConfigured) await dasariaCreateAuthUser(email, password);
+        var newId = await addDocument('users', payload);
+        users.push(Object.assign({id:newId}, payload));
+      }
+      renderUsers();
+      closeUserDrawer();
+      showToast('Pengguna "' + nama + '" disimpan' + (id ? (password ? ' -- kata sandi baru sudah aktif.' : '.') : ' -- akun login sudah aktif, bisa langsung dipakai.'));
+    } catch(err){
+      showToast(AUTH_CREATE_ERROR_MESSAGES[err.code] || err.message || ('Gagal: ' + err));
+    } finally {
+      saveBtn.disabled = false;
+    }
+  };
+
+  window.deleteUser = async function(id){
+    var u = users.find(function(x){ return x.id===id; });
+    if(!u) return;
+    if(!confirm('Hapus pengguna "' + u.nama + '" (' + u.email + ')? Akun login-nya juga akan dihapus -- tidak bisa dibatalkan.')) return;
+    try {
+      if(DasariaData.isConfigured) await callAdminService('adminDeleteUser', { email: u.email });
+      await deleteDocument('users', id);
+      users = users.filter(function(x){ return x.id!==id; });
+      renderUsers();
+      showToast('Pengguna "' + u.nama + '" dihapus.');
+    } catch(err){
+      showToast('Gagal menghapus: ' + (err.message || err));
+    }
+  };
+
+  function renderRoles(){
+    document.getElementById('role-tbody').innerHTML = roles.map(function(r){
+      var count = users.filter(function(u){ return u.roleId===r.id; }).length;
+      return '<tr>' +
+        '<td style="font-weight:700;color:var(--gray-900);">' + r.nama + '</td>' +
+        '<td class="muted">' + (r.deskripsi||'—') + '</td>' +
+        '<td>' + count + '</td>' +
+        '<td><button class="btn btn-outline btn-sm" onclick="openRoleDrawer(\'' + r.id + '\')">Edit</button></td>' +
+      '</tr>';
+    }).join('') || '<tr><td colspan="4"><div class="empty-state">Belum ada role.</div></td></tr>';
+  }
+
+  /** Set centang checkbox "Semua Halaman" jadi checked / indeterminate / kosong, sesuai isi tabel saat ini. */
+  function syncPermAllCheckbox(){
+    var boxes = document.querySelectorAll('#r-permissions tbody input[type=checkbox]');
+    var checkedCount = 0;
+    boxes.forEach(function(cb){ if(cb.checked) checkedCount++; });
+    var all = document.getElementById('r-perm-all');
+    all.checked = boxes.length > 0 && checkedCount === boxes.length;
+    all.indeterminate = checkedCount > 0 && checkedCount < boxes.length;
+  }
+
+  window.openRoleDrawer = function(id){
+    var r = id ? roles.find(function(x){ return x.id===id; }) : null;
+    document.getElementById('role-drawer-title').textContent = r ? 'Edit Role' : 'Tambah Role';
+    document.getElementById('r-id').value = r ? r.id : '';
+    document.getElementById('r-nama').value = r ? r.nama : '';
+    document.getElementById('r-deskripsi').value = r ? r.deskripsi : '';
+    var perms = r ? (r.permissions||{}) : {};
+    document.getElementById('r-permissions').innerHTML =
+      '<table class="perm-table"><thead><tr>' +
+        '<th><label class="perm-all-lbl"><input type="checkbox" id="r-perm-all" onchange="toggleAllPerms(this.checked)"> Semua Halaman</label></th>' +
+        PERM_ACTIONS.map(function(a){ return '<th>' + a.label + '</th>'; }).join('') +
+      '</tr></thead><tbody>' +
+      HRIS_MODULES.map(function(m){
+        var modPerm = (perms[m.key] || {});
+        return '<tr><td>' + m.label + '</td>' +
+          PERM_ACTIONS.map(function(a){
+            return '<td><input type="checkbox" data-mod="' + m.key + '" data-act="' + a.key + '" ' + (modPerm[a.key] ? 'checked' : '') + ' onchange="syncPermAllCheckboxHandle()"></td>';
+          }).join('') +
+        '</tr>';
+      }).join('') +
+      '</tbody></table>';
+    syncPermAllCheckbox();
+    document.getElementById('role-drawer').classList.add('show');
+    document.getElementById('role-overlay').classList.add('show');
+  };
+  window.syncPermAllCheckboxHandle = syncPermAllCheckbox;
+  /** Checkbox header "Semua Halaman": centang/kosongkan SELURUH sel (semua halaman x semua aksi) sekaligus. */
+  window.toggleAllPerms = function(checked){
+    document.querySelectorAll('#r-permissions tbody input[type=checkbox]').forEach(function(cb){ cb.checked = checked; });
+  };
+  window.closeRoleDrawer = function(){
+    document.getElementById('role-drawer').classList.remove('show');
+    document.getElementById('role-overlay').classList.remove('show');
+  };
+  window.saveRole = async function(){
+    var nama = document.getElementById('r-nama').value.trim();
+    if(!nama){ showToast('Isi Nama Role dulu.'); return; }
+    var id = document.getElementById('r-id').value;
+    var permissions = {};
+    document.querySelectorAll('#r-permissions tbody input[type=checkbox]').forEach(function(cb){
+      var mod = cb.getAttribute('data-mod');
+      if(!permissions[mod]) permissions[mod] = {};
+      permissions[mod][cb.getAttribute('data-act')] = cb.checked;
+    });
+    var payload = { nama: nama, deskripsi: document.getElementById('r-deskripsi').value.trim(), permissions: permissions };
+    if(id){
+      await updateDocument('roles', id, payload);
+      var idx = roles.findIndex(function(r){ return r.id===id; });
+      if(idx!==-1) roles[idx] = Object.assign({id:id}, payload);
+    } else {
+      var newId = await addDocument('roles', payload);
+      roles.push(Object.assign({id:newId}, payload));
+    }
+    renderRoles();
+    renderUsers();
+    closeRoleDrawer();
+    showToast('Role "' + nama + '" disimpan.');
+  };
+
+  async function init(){
+    roles = await getCollection('roles', seedRoles);
+    users = await getCollection('users', seedUsers);
+    renderRoles();
+    renderUsers();
+  }
+  DasariaAuth.ready().then(function(user){
+    if(user){
+      document.getElementById('topbar-user-email').textContent = user.email;
+      document.getElementById('topbar-user-avatar').textContent = user.email.substring(0,2).toUpperCase();
+    }
+    return init();
+  });
+</script>
+<script src="rbac-guard.js"></script>
+<script src="sidebar-toggle.js"></script>
+<script src="sidebar-badges.js"></script>
+</body>
+</html>

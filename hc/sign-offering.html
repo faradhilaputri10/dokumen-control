@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persetujuan Offering Letter — Dasaria</title>
+<!--
+  Halaman PUBLIK (tanpa login) -- kandidat membuka lewat link unik yang dibagikan
+  manual (mis. WhatsApp) oleh TA: sign-offering.html?id=<idPengajuan>&token=<signToken>
+
+  Redesain 30 Ags 2026 (permintaan langsung user) -- SATU halaman gaya "website perusahaan"
+  (bukan tampil sebagai dokumen Google Doc), bukan lagi alur multi-langkah terpisah
+  (pilih metode -> gerbang OTP -> baru form tanda tangan). Sekarang: Nama Lengkap + Tanda
+  Tangan (coretan, digambar langsung -- bukan pilihan ketik ATAU gambar) SELALU tampil
+  bersebelahan di satu form yang sama.
+
+  Update 1 Sep 2026 (permintaan langsung user) -- verifikasi kode OTP email DIHAPUS TOTAL.
+  Kandidat sekarang langsung bisa mengisi Nama Lengkap + Tanda Tangan begitu link dibuka, tanpa
+  langkah verifikasi tambahan apa pun. "Masuk dengan Google" (kalau dikonfigurasi lewat
+  GOOGLE_SIGNIN_CLIENT_ID di bawah) tetap tersedia sebagai verifikasi identitas OPSIONAL --
+  bukan lagi salah satu dari 2 metode wajib, cuma lapisan ekstra kalau HC mau mengaktifkannya.
+
+  Finalisasi tanda tangan tetap lewat Apps Script Web App tepercaya
+  (scripts/apps-script-offering-services.gs, action 'finalizeSignature') -- kandidat TIDAK
+  PERNAH menulis Firestore langsung (lihat firestore.rules), dan dokumen final yang dihasilkan
+  di sana sekarang PDF asli (bukan lagi salinan Google Doc yang bisa diedit).
+  OFFERING_SERVICES_URL di bawah harus diisi URL deployment Apps Script itu (SAMA persis dengan
+  OFFERING_SERVICES_URL di rekrutmen.html). Selama masih placeholder, halaman fallback ke mode
+  demo (tulis langsung ke Firestore/localStorage lewat anon auth, dokumen final tidak digenerate
+  PDF sungguhan), supaya tetap bisa didemokan sebelum Apps Script-nya dideploy.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#2563EB; --primary-dark:#1D4ED8; --primary-light:#EFF6FF; --primary-100:#DBEAFE;
+    --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0; --gray-300:#CBD5E1; --gray-400:#94A3B8;
+    --gray-500:#64748B; --gray-600:#475569; --gray-700:#334155; --gray-800:#1E293B; --gray-900:#0F172A;
+    --green:#16A34A; --green-bg:#DCFCE7; --red:#DC2626; --red-bg:#FEE2E2; --amber:#D97706; --amber-bg:#FEF3C7;
+    --radius:14px; --shadow:0 12px 32px rgba(15,23,42,.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);max-width:520px;width:100%;padding:32px 28px;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+  .brand svg{width:30px;height:30px;}
+  .brand b{font-size:16px;font-weight:800;color:var(--gray-900);}
+  h1{font-size:19px;font-weight:800;margin:0 0 6px;color:var(--gray-900);}
+  h2.section-title{font-size:13px;font-weight:800;color:var(--gray-900);margin:22px 0 4px;}
+  p.sub{font-size:13px;color:var(--gray-500);margin:0 0 22px;}
+  .kv-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--gray-100);padding:10px 0;font-size:13.5px;}
+  .kv-row span{color:var(--gray-500);}
+  .kv-row b{color:var(--gray-900);font-weight:700;text-align:right;}
+  .box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;margin:18px 0;}
+  label{display:block;font-size:12.5px;font-weight:700;color:var(--gray-700);margin-bottom:6px;}
+  input[type=text]{width:100%;border:1px solid var(--gray-300);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;}
+  input[type=text]:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .agree{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--gray-600);margin:18px 0;}
+  .agree input{margin-top:2px;}
+  .btn{width:100%;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:10px;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-reject{background:#fff;border:1px solid var(--red);color:var(--red);}
+  .btn-reject:hover{background:var(--red-bg);}
+  /* Link "Baca Dokumen Penawaran Lengkap (PDF)" (1 Sep 2026) -- sekunder, bukan bentuk .btn-primary
+     penuh, supaya CTA utama (Setuju & Tanda Tangan) tetap paling menonjol. */
+  .btn-doc-link{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;background:#fff;border:1px solid var(--gray-300);color:var(--gray-700);border-radius:10px;padding:12px;font-weight:700;font-size:13.5px;margin:4px 0 10px;}
+  .btn-doc-link:hover{background:var(--gray-50);border-color:var(--gray-400);}
+  .state-icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .state-icon.ok{background:var(--green-bg);color:var(--green);}
+  .state-icon.no{background:var(--red-bg);color:var(--red);}
+  .state-icon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .center{text-align:center;}
+  .muted{color:var(--gray-500);font-size:13px;}
+  #loading{text-align:center;padding:20px 0;color:var(--gray-400);font-size:13px;}
+  .sig-pad-wrap{border:1.5px dashed var(--gray-300);border-radius:10px;margin-bottom:6px;overflow:hidden;background:#fff;}
+  canvas#sig-pad{width:100%;height:150px;touch-action:none;cursor:crosshair;display:block;}
+  .sig-clear-row{display:flex;justify-content:flex-end;margin-bottom:4px;}
+  .sig-clear-row button{background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:0;}
+  .sig-hint{font-size:11.5px;color:var(--gray-400);margin:0 0 4px;}
+  /* ===== Verifikasi (OTP inline / Google inline) -- 30 Ags 2026 ===== */
+  .verify-box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;margin-top:6px;}
+  .verify-box.verified{background:var(--green-bg);border-color:#B4E5C4;}
+  .otp-row{display:flex;gap:8px;align-items:stretch;}
+  input.otp-code{flex:1;min-width:0;letter-spacing:6px;font-size:17px;font-weight:700;text-align:center;border:1px solid var(--gray-300);border-radius:8px;padding:10px 8px;font-family:inherit;}
+  input.otp-code:disabled{background:var(--gray-100);color:var(--gray-400);}
+  .otp-row .btn{width:auto;flex-shrink:0;margin-bottom:0;padding:0 16px;font-size:12.5px;white-space:nowrap;}
+  .verify-status{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--green);margin-top:8px;}
+  .verify-status svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:3;flex-shrink:0;}
+  .otp-error{background:var(--red-bg);color:var(--red);border-radius:8px;padding:9px 12px;font-size:12.5px;margin-top:10px;}
+  .otp-resend{background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;margin-top:8px;}
+  .otp-resend:disabled{color:var(--gray-400);cursor:not-allowed;}
+  #gsi-button-slot{margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <svg viewBox="0 0 38 38" fill="none"><circle cx="13" cy="13" r="12" fill="#10b981"/><circle cx="25" cy="13" r="12" fill="#3b82f6" opacity="0.85"/><circle cx="13" cy="25" r="12" fill="#f97316" opacity="0.85"/><circle cx="25" cy="25" r="12" fill="#8b5cf6" opacity="0.85"/></svg>
+    <b>Dasaria HRIS</b>
+  </div>
+  <div id="loading">Memuat dokumen…</div>
+  <div id="content" style="display:none;"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data-layer.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+(function(){
+  // Isi dengan URL deployment Apps Script Web App (langkah setup ada di komentar atas
+  // scripts/apps-script-offering-services.gs) -- SAMA persis dengan OFFERING_SERVICES_URL di
+  // rekrutmen.html. Selama masih placeholder ini, halaman fallback ke mode demo (tulis langsung
+  // ke Firestore/localStorage, tanpa dokumen final PDF sungguhan).
+  var OFFERING_SERVICES_URL = 'https://script.google.com/macros/s/AKfycbwvKpgje4Q4IRmA-yxgXo8nw-0E7KtGowuiAOrD7c_erQfFRn2qYutd3fVQmwJ6s6bVcg/exec';
+  // Client ID OAuth "Sign in with Google" -- bikin di Google Cloud Console: APIs & Services ->
+  // Credentials -> Create Credentials -> OAuth client ID -> Web application -> Authorized
+  // JavaScript origins: isi domain hosting ini (mis. https://hris-dasaria.web.app DAN
+  // http://localhost:5000 untuk simulasi lokal). Selama placeholder, opsi ini disembunyikan --
+  // kandidat langsung ke form Nama Lengkap + Tanda Tangan, tanpa verifikasi identitas apa pun.
+  var GOOGLE_SIGNIN_CLIENT_ID = 'PASTE_GOOGLE_OAUTH_CLIENT_ID_DI_SINI';
+
+  var params = new URLSearchParams(location.search);
+  var offeringId = params.get('id');
+  var token = params.get('token');
+  var contentEl = document.getElementById('content');
+  var loadingEl = document.getElementById('loading');
+
+  function idr(n){ return 'Rp ' + Number(n||0).toLocaleString('id-ID'); }
+
+  function realServiceConfigured(){
+    return !!OFFERING_SERVICES_URL && OFFERING_SERVICES_URL.indexOf('PASTE_') !== 0;
+  }
+  /**
+   * Mode demo SAJA (30 Ags 2026, ditemukan lewat uji Simulasi Lokal) -- kandidat di halaman
+   * publik ini TIDAK PERNAH login, tapi firestore.rules Fase 4 mensyaratkan `request.auth !=
+   * null` untuk menulis offering_submissions (jalur tulis publik lama sudah dihapus total --
+   * lihat komentar di firestore.rules). Selama Apps Script belum dideploy, kandidat login
+   * ANONIM dulu (bukan akun asli, tidak ada form/UI apa pun -- transparan) supaya lolos rules
+   * itu tanpa melonggarkannya. TIDAK PERNAH dipanggil kalau OFFERING_SERVICES_URL sudah
+   * dikonfigurasi (jalur produksi menulis lewat Apps Script/service account, bypass rules ini
+   * sepenuhnya, tidak butuh anonymous auth sama sekali). Perlu "Anonymous" diaktifkan di Firebase
+   * Console -> Authentication -> Sign-in method (sekali saja, gratis) supaya ini jalan di project
+   * asli; di Auth Emulator (Simulasi Lokal) biasanya sudah aktif tanpa langkah tambahan.
+   */
+  function ensureAnonAuth(){
+    if(typeof firebase === 'undefined' || !firebase.auth) return Promise.resolve();
+    dasariaInitFirebase();
+    if(firebase.auth().currentUser) return Promise.resolve();
+    return firebase.auth().signInAnonymously().catch(function(e){
+      console.error('Anonymous auth gagal (cek "Anonymous" sudah aktif di Firebase Console > Authentication > Sign-in method):', e);
+    });
+  }
+  function googleSignInConfigured(){
+    return !!GOOGLE_SIGNIN_CLIENT_ID && GOOGLE_SIGNIN_CLIENT_ID.indexOf('PASTE_') !== 0;
+  }
+
+  function maskEmail(email){
+    var parts = String(email||'').split('@');
+    if(parts.length !== 2) return email || '-';
+    var name = parts[0];
+    var visible = name.slice(0, Math.min(2, name.length));
+    return visible + '***@' + parts[1];
+  }
+
+  // Hybrid (1 Sep 2026, keputusan diskusi langsung user): ringkasan HTML di bawah TETAP jadi
+  // tampilan utama (cepat, ramah dibuka dari link WhatsApp di HP), TAPI dokumen resmi lengkap
+  // (gabungan OA+CS, `sub.finalDocUrl`) ditautkan jelas supaya kandidat benar-benar bisa membaca
+  // seluruh isi dokumen yang mengikat dia, bukan cuma cuplikan field yang dipilih di sini. Dokumen
+  // itu draft-nya SUDAH digenerate begitu HC approve (approveOfferingSubmission di rekrutmen.html,
+  // sebelum kandidat pernah buka halaman ini) -- link ini cuma MENAMPILKAN yang sudah ada, tidak
+  // generate apa pun baru. Setelah kandidat setuju & tanda tangan, signSvc_handleFinalize men-
+  // TIMPA dokumen yang SAMA (existingFileId = sub.finalDocFileId) jadi PDF final bertanda tangan --
+  // bukan dokumen terpisah -- jadi link ini otomatis tetap valid sebelum maupun sesudah tanda
+  // tangan, isinya saja yang berubah dari draft ("-") jadi final (tertanda tangan).
+  function offerSummaryHtml(sub){
+    var oa = sub.oa, cs = sub.cs;
+    return '<h1>Penawaran Kerja</h1>' +
+      '<p class="sub">Halo <b>' + oa.namaKandidat + '</b>, berikut rincian penawaran kerja dari Dasaria. Mohon periksa sebelum menyetujui.</p>' +
+      '<div class="kv-row"><span>Jabatan</span><b>' + oa.jobTitle + '</b></div>' +
+      '<div class="kv-row"><span>Direktorat / Divisi</span><b>' + oa.direktorat + (oa.divisi ? ' — ' + oa.divisi : '') + '</b></div>' +
+      '<div class="kv-row"><span>Lokasi Kerja</span><b>' + (oa.lokasiKerja || '-') + '</b></div>' +
+      '<div class="kv-row"><span>Tanggal Bergabung</span><b>' + oa.tanggalBergabung + '</b></div>' +
+      '<div class="kv-row"><span>Tipe Karyawan</span><b>' + oa.employmentType + '</b></div>' +
+      '<div class="box">' +
+        '<div class="kv-row" style="border:none;padding-top:0;"><span>Gaji Pokok</span><b>' + idr(cs.gajiPokok) + '</b></div>' +
+        '<div class="kv-row"><span>Tunjangan Tetap</span><b>' + idr(cs.tunjanganTetap) + '</b></div>' +
+        '<div class="kv-row" style="border:none;padding-bottom:0;"><span>Tunjangan Tidak Tetap</span><b>' + idr(cs.tunjanganTidakTetap) + '</b></div>' +
+      '</div>' +
+      (sub.finalDocUrl
+        ? '<a class="btn-doc-link" href="' + sub.finalDocUrl + '" target="_blank" rel="noopener">📄 Baca Dokumen Penawaran Lengkap (PDF)</a>'
+        : '<p class="muted" style="font-size:12px;margin:0 0 10px;">Dokumen lengkap sedang disiapkan — ringkasan di atas tetap bisa dibaca sekarang.</p>');
+  }
+
+  function renderInvalid(message){
+    loadingEl.style.display = 'none';
+    contentEl.style.display = '';
+    contentEl.innerHTML =
+      '<div class="state-icon no"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>' +
+      '<h1 class="center">Link tidak valid</h1>' +
+      '<p class="sub center">' + message + '</p>';
+  }
+
+  function renderDone(sub, accepted){
+    loadingEl.style.display = 'none';
+    contentEl.style.display = '';
+    contentEl.innerHTML =
+      '<div class="state-icon ' + (accepted ? 'ok' : 'no') + '"><svg viewBox="0 0 24 24">' +
+        (accepted ? '<path d="M20 6L9 17l-5-5"/>' : '<path d="M18 6L6 18M6 6l12 12"/>') +
+      '</svg></div>' +
+      '<h1 class="center">' + (accepted ? 'Terima kasih!' : 'Penawaran ditolak') + '</h1>' +
+      '<p class="sub center">' + (accepted
+        ? 'Terima kasih telah menerima penawaran kerja kami di Dasaria. Persetujuan Anda sudah tercatat di sistem — tim HC akan menghubungi Anda untuk langkah berikutnya.'
+        : 'Jawaban Anda sudah tercatat. Terima kasih atas waktu dan pertimbangannya.') + '</p>';
+  }
+
+  // ===== Sig pad (canvas) -- tanda tangan coretan, SELALU tampil (bukan lagi pilihan
+  // ketik-ATAU-gambar, 30 Ags 2026) berdampingan dengan Nama Lengkap. =====
+  var sigPadCtx = null, sigPadHasDrawing = false, sigPadDrawing = false, sigPadLast = null;
+
+  function initSigPad(canvas){
+    var ratio = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    ctx.strokeStyle = '#0F172A';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    sigPadCtx = ctx;
+    sigPadHasDrawing = false;
+
+    function posFromEvent(e){
+      var r = canvas.getBoundingClientRect();
+      var p = e.touches ? e.touches[0] : e;
+      return { x: p.clientX - r.left, y: p.clientY - r.top };
+    }
+    function start(e){ e.preventDefault(); sigPadDrawing = true; sigPadLast = posFromEvent(e); }
+    function move(e){
+      if(!sigPadDrawing) return;
+      e.preventDefault();
+      var p = posFromEvent(e);
+      ctx.beginPath(); ctx.moveTo(sigPadLast.x, sigPadLast.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+      sigPadLast = p; sigPadHasDrawing = true;
+    }
+    function end(){ sigPadDrawing = false; }
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive:false });
+    canvas.addEventListener('touchmove', move, { passive:false });
+    canvas.addEventListener('touchend', end);
+  }
+  window.__sigClear = function(){
+    var canvas = document.getElementById('sig-pad');
+    if(!canvas || !sigPadCtx) return;
+    sigPadCtx.clearRect(0, 0, canvas.width, canvas.height);
+    sigPadHasDrawing = false;
+  };
+
+  // ===== Halaman gaya "website perusahaan" TUNGGAL (30 Ags 2026) -- Ringkasan Penawaran,
+  // Nama Lengkap + Tanda Tangan (satu blok, bukan bar terpisah), lalu Setuju/Tolak. Menggantikan
+  // alur lama renderVerifyChoice -> renderOtpGate/renderGoogleGate -> renderSignatureForm.
+  // Update 1 Sep 2026: verifikasi OTP email DIHAPUS TOTAL (permintaan langsung user) -- kandidat
+  // tidak lagi digerbang apa pun sebelum menandatangani. "Masuk dengan Google" TETAP ada sebagai
+  // verifikasi OPSIONAL kalau GOOGLE_SIGNIN_CLIENT_ID dikonfigurasi (bukan lagi wajib). =====
+  function renderUnifiedForm(sub){
+    loadingEl.style.display = 'none';
+    contentEl.style.display = '';
+    sigPadCtx = null; sigPadHasDrawing = false;
+
+    var needsVerification = googleSignInConfigured();
+    var identityVerified = !needsVerification; // tidak digerbang kecuali Google Sign-In dikonfigurasi
+    var verification = { method: 'none', googleIdToken: null };
+
+    var verifySectionHtml = '';
+    if(googleSignInConfigured()){
+      verifySectionHtml =
+        '<h2 class="section-title">Verifikasi Identitas</h2>' +
+        '<div class="verify-box" id="verify-box">' +
+          '<p class="muted" style="margin:0 0 10px;">Masuk dengan akun Google yang sama dengan email terdaftar: <b>' + maskEmail(sub.oa.emailKandidat) + '</b>.</p>' +
+          '<div id="gsi-button-slot"></div>' +
+          '<div id="verify-msg"></div>' +
+        '</div>';
+    }
+
+    contentEl.innerHTML =
+      offerSummaryHtml(sub) +
+      '<h2 class="section-title">Nama Lengkap</h2>' +
+      '<input type="text" id="sign-name" placeholder="Nama lengkap sesuai identitas">' +
+      '<h2 class="section-title">Tanda Tangan</h2>' +
+      '<p class="sig-hint">Gambar tanda tangan Anda dengan jari/mouse di kotak ini.</p>' +
+      '<div class="sig-pad-wrap"><canvas id="sig-pad"></canvas></div>' +
+      '<div class="sig-clear-row"><button type="button" onclick="__sigClear()">Bersihkan</button></div>' +
+      verifySectionHtml +
+      '<div class="agree"><input type="checkbox" id="sign-agree"><span>Saya menyatakan telah membaca ringkasan dan/atau Dokumen Penawaran Lengkap di atas, dan menyetujui seluruh isinya.</span></div>' +
+      '<div id="sign-error-box"></div>' +
+      '<button class="btn btn-primary" id="btn-accept" disabled>Setuju &amp; Tanda Tangan</button>' +
+      '<button class="btn btn-reject" id="btn-reject">Tolak Penawaran</button>' +
+      '<p class="muted center" style="margin-top:14px;">Email terdaftar: ' + sub.oa.emailKandidat + '</p>';
+
+    initSigPad(document.getElementById('sig-pad'));
+
+    var nameInput = document.getElementById('sign-name');
+    var agreeInput = document.getElementById('sign-agree');
+    var acceptBtn = document.getElementById('btn-accept');
+    var rejectBtn = document.getElementById('btn-reject');
+    var errorBox = document.getElementById('sign-error-box');
+    function showError(msg){ errorBox.innerHTML = msg ? '<div class="otp-error">' + msg + '</div>' : ''; }
+    function refreshBtn(){ acceptBtn.disabled = !(nameInput.value.trim() && agreeInput.checked); }
+    nameInput.addEventListener('input', refreshBtn);
+    agreeInput.addEventListener('change', refreshBtn);
+
+    // ----- Verifikasi Google inline (opsional) -----
+    if(googleSignInConfigured()){
+      var gVerifyBox = document.getElementById('verify-box');
+      var gVerifyMsg = document.getElementById('verify-msg');
+      if(typeof google === 'undefined' || !google.accounts || !google.accounts.id){
+        gVerifyMsg.innerHTML = '<div class="otp-error">Layanan Google Sign-In gagal dimuat (periksa koneksi internet Anda).</div>';
+      } else {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_SIGNIN_CLIENT_ID,
+          callback: function(response){
+            identityVerified = true;
+            verification = { method: 'google', googleIdToken: response.credential };
+            gVerifyBox.classList.add('verified');
+            gVerifyMsg.innerHTML = '<div class="verify-status"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Akun Google terverifikasi</div>';
+          }
+        });
+        google.accounts.id.renderButton(document.getElementById('gsi-button-slot'), { theme: 'outline', size: 'large', width: 280 });
+      }
+    }
+
+    function submit(accepted, triggerBtn, busyLabel, idleLabel){
+      var name = nameInput.value.trim();
+      if(!name){ showError('Isi Nama Lengkap dulu.'); return; }
+      if(accepted && !sigPadHasDrawing){ showError('Gambar tanda tangan Anda dulu di kotak Tanda Tangan.'); return; }
+      if(accepted && needsVerification && !identityVerified){ showError('Masuk dengan Google dulu sebelum menandatangani.'); return; }
+      triggerBtn.disabled = true; triggerBtn.textContent = busyLabel;
+      showError('');
+
+      var signatureImageBase64 = (accepted && sigPadHasDrawing) ? document.getElementById('sig-pad').toDataURL('image/png').split(',')[1] : null;
+
+      if(!realServiceConfigured() && !googleSignInConfigured()){
+        // Mode demo (Apps Script belum di-deploy, tidak ada gerbang verifikasi apa pun) -- tulis
+        // langsung ke Firestore/localStorage, tanpa generate dokumen final sungguhan (itu butuh
+        // Apps Script yang belum aktif).
+        var today = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+        var stages = sub.stages;
+        var patch = { stages: stages, updatedAt: today };
+        var dummyPromise = Promise.resolve(null);
+        if(accepted){
+          stages.approvalKandidat = { status:'selesai', at: today, by: name, note: 'Kandidat menyetujui & menandatangani dokumen secara elektronik (mode demo).' };
+          stages.complete = { status:'selesai', at: today, by: 'Sistem', note: 'Semua tahap selesai — dokumen final.' };
+          // Simulasi Lokal SAJA -- lihat getLocalDummyDocUrl() di data-layer.js. Selalu no-op
+          // (null) di production karena USE_LOCAL_EMULATOR selalu false di sana.
+          if(typeof USE_LOCAL_EMULATOR !== 'undefined' && USE_LOCAL_EMULATOR){
+            dummyPromise = DasariaData.getLocalDummyDocUrl('FINAL');
+          }
+        } else {
+          stages.approvalKandidat = { status:'ditolak', at: today, by: name, note: 'Kandidat menolak penawaran kerja (mode demo).' };
+        }
+        ensureAnonAuth().then(function(){
+          return dummyPromise;
+        }).then(function(dummyUrl){
+          if(dummyUrl) patch.finalDocUrl = dummyUrl;
+          return DasariaData.updateDocument('offering_submissions', offeringId, patch);
+        }).then(function(){
+          renderDone(sub, accepted);
+        }).catch(function(e){
+          showError('Gagal menyimpan — ' + (e && e.message ? e.message : 'periksa koneksi Anda') + '.');
+          triggerBtn.disabled = false; triggerBtn.textContent = idleLabel;
+        });
+        return;
+      }
+
+      var payload = {
+        action: 'finalizeSignature', id: offeringId, token: token, accepted: accepted,
+        method: verification.method, googleIdToken: verification.googleIdToken || null,
+        signerName: name,
+        signatureImageBase64: signatureImageBase64
+      };
+      fetch(OFFERING_SERVICES_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+        .then(function(res){ return res.json(); })
+        .then(function(result){
+          if(!result.ok){
+            showError(result.error || 'Gagal menyimpan. Coba lagi.');
+            triggerBtn.disabled = false; triggerBtn.textContent = idleLabel;
+            return;
+          }
+          renderDone(sub, accepted);
+        })
+        .catch(function(){
+          showError('Gagal menghubungi layanan. Periksa koneksi internet Anda dan coba lagi.');
+          triggerBtn.disabled = false; triggerBtn.textContent = idleLabel;
+        });
+    }
+
+    acceptBtn.addEventListener('click', function(){ submit(true, acceptBtn, 'Menyimpan…', 'Setuju & Tanda Tangan'); });
+    rejectBtn.addEventListener('click', function(){
+      if(!confirm('Yakin ingin menolak penawaran ini? Tindakan ini tidak bisa dibatalkan.')) return;
+      submit(false, rejectBtn, 'Menyimpan…', 'Tolak Penawaran');
+    });
+  }
+
+  (async function main(){
+    if(!offeringId || !token){ renderInvalid('Tautan tidak lengkap. Hubungi HC/TA Anda untuk mendapatkan link yang benar.'); return; }
+    var sub;
+    try { sub = await DasariaData.getDocument('offering_submissions', offeringId); }
+    catch(e){ renderInvalid('Gagal memuat dokumen. Coba lagi beberapa saat, atau hubungi HC/TA Anda.'); return; }
+    if(!sub){ renderInvalid('Dokumen tidak ditemukan.'); return; }
+    if(sub.signToken !== token){ renderInvalid('Tautan tidak valid untuk dokumen ini.'); return; }
+    if(sub.stages.complete && sub.stages.complete.status === 'selesai'){ renderDone(sub, true); return; }
+    if(sub.stages.approvalKandidat && sub.stages.approvalKandidat.status === 'ditolak'){ renderDone(sub, false); return; }
+    if(!sub.stages.approvalKandidat || sub.stages.approvalKandidat.status !== 'proses'){ renderInvalid('Dokumen ini belum siap untuk ditandatangani. Hubungi HC/TA Anda.'); return; }
+    renderUnifiedForm(sub);
+  })();
+})();
+</script>
+</body>
+</html>

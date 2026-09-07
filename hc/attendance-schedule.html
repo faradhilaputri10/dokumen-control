@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dasaria HRIS — Jadwal &amp; Kehadiran</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#2563EB;
+    --primary-dark:#1D4ED8;
+    --primary-light:#EFF6FF;
+    --primary-100:#DBEAFE;
+    --gray-50:#F8FAFC;
+    --gray-100:#F1F5F9;
+    --gray-200:#E2E8F0;
+    --gray-300:#CBD5E1;
+    --gray-400:#94A3B8;
+    --gray-500:#64748B;
+    --gray-600:#475569;
+    --gray-700:#334155;
+    --gray-800:#1E293B;
+    --gray-900:#0F172A;
+    --green:#16A34A; --green-bg:#DCFCE7;
+    --amber:#D97706; --amber-bg:#FEF3C7;
+    --red:#DC2626; --red-bg:#FEE2E2;
+    --purple:#7C3AED; --purple-bg:#EDE9FE;
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+    --shadow-md:0 4px 12px rgba(15,23,42,.08);
+    --shadow-lg:0 12px 32px rgba(15,23,42,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:14px;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .app{display:flex;min-height:100vh;}
+
+  /* ===== SIDEBAR (shared across all HC modules — see dashboard-hc.html) ===== */
+  .sidebar{width:260px;background:#fff;border-right:1px solid var(--gray-200);flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;font-family:'Outfit','Segoe UI',Arial,sans-serif;}
+  .brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;}
+  .brand .logo{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .brand .name{font-size:19px;font-weight:800;color:#101828;letter-spacing:-.3px;}
+  .menu-label{font-size:12px;font-weight:700;padding:4px 20px 8px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;}
+  .menu-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:2px 12px;border-radius:8px;cursor:pointer;color:#1f2937;text-decoration:none;font-size:14px;}
+  .menu-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
+  .menu-item .chev{margin-left:auto;width:14px;height:14px;transition:transform .15s;}
+  .menu-item.open .chev{transform:rotate(180deg);}
+  .menu-item:hover{background:#f7f8fa;}
+  .menu-item.active-parent{color:#465fff;font-weight:600;background:#ecf3ff;}
+  .submenu{padding-left:14px;}
+  .submenu .menu-item{padding:7px 12px 7px 34px;font-size:13.5px;margin:1px 12px;}
+  .submenu .menu-item.active{color:#465fff;font-weight:600;background:#ecf3ff;}
+  .sidebar-foot{margin-top:auto;padding:16px 20px;border-top:1px solid var(--gray-200);font-family:'Inter','Segoe UI',Arial,sans-serif;}
+  .sidebar-user{display:flex;align-items:center;gap:10px;}
+  .sidebar-user .avatar{width:34px;height:34px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;}
+  .sidebar-user .u-name{font-size:12.5px;font-weight:700;color:var(--gray-800);}
+  .sidebar-user .u-role{font-size:11px;color:var(--gray-500);}
+
+  /* ===== MAIN / TOPBAR ===== */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{min-height:64px;background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:60;}
+  .topbar-search{display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:8px 12px;min-width:280px;color:var(--gray-400);}
+  .topbar-search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;width:100%;color:var(--gray-800);}
+  .topbar-search svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
+  .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--gray-200);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-600);flex-shrink:0;position:relative;}
+  .icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;}
+  .icon-btn:hover{background:var(--gray-50);}
+  .icon-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .icon-btn:disabled:hover{background:#fff;}
+  .icon-btn .dot{position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+  .topbar-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px 4px 4px;border-radius:20px;}
+  .topbar-user:hover{background:var(--gray-50);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+
+  .loading-bar{position:fixed;top:0;left:0;height:2.5px;background:var(--primary);width:0;z-index:300;opacity:0;transition:width .28s ease, opacity .15s ease;}
+  .loading-bar.show{opacity:1;}
+  .breadcrumb-trail{font-size:12.5px;color:var(--gray-500);margin-bottom:14px;}
+  .breadcrumb-trail b{color:var(--gray-800);font-weight:600;}
+
+  .empty-state{text-align:center;padding:56px 20px;color:var(--gray-400);}
+  .empty-state svg{width:40px;height:40px;stroke:var(--gray-300);fill:none;stroke-width:1.5;margin-bottom:12px;}
+  .empty-state .es-title{font-size:13.5px;font-weight:700;color:var(--gray-600);margin-bottom:4px;}
+  .empty-state .es-desc{font-size:12.5px;color:var(--gray-400);}
+
+  .content{padding:24px;flex:1;position:relative;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+  .page-head h1{font-size:20px;font-weight:800;margin:0 0 4px;color:var(--gray-900);letter-spacing:-.2px;}
+  .page-head .sub{font-size:13px;color:var(--gray-500);}
+
+  .grid-12{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+  .col-3{grid-column:span 3;} .col-4{grid-column:span 4;} .col-5{grid-column:span 5;}
+  .col-6{grid-column:span 6;} .col-7{grid-column:span 7;} .col-8{grid-column:span 8;}
+  .col-9{grid-column:span 9;} .col-12{grid-column:span 12;}
+  @media (max-width:1300px){ .col-3,.col-4{grid-column:span 6;} .col-8,.col-9,.col-7,.col-5{grid-column:span 12;} }
+
+  .card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);}
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .card-head h2{font-size:14.5px;font-weight:700;margin:0;color:var(--gray-900);}
+  .card-head .sub{font-size:12px;color:var(--gray-500);margin-top:2px;}
+
+  .kpi-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm);}
+  .kpi-card .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .kpi-icon svg{width:18px;height:18px;stroke-width:1.9;fill:none;}
+  .kpi-card .lbl{font-size:12.5px;color:var(--gray-500);font-weight:600;margin-bottom:6px;}
+  .kpi-card .val{font-size:26px;font-weight:800;color:var(--gray-900);line-height:1;}
+  .kpi-delta{font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-top:8px;}
+  .kpi-delta.up{color:var(--green);} .kpi-delta.down{color:var(--red);} .kpi-delta.flat{color:var(--gray-400);}
+  .kpi-delta svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:3;}
+
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap;}
+  .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;flex-shrink:0;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-outline{background:#fff;border:1px solid var(--gray-300);color:var(--gray-700);}
+  .btn-outline:hover{background:var(--gray-50);}
+  .btn-ghost{background:transparent;color:var(--gray-600);}
+  .btn-ghost:hover{background:var(--gray-100);}
+  .btn-danger{background:var(--red);color:#fff;}
+  .btn-danger:hover{background:#B91C1C;}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .chip i{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .chip-green{background:var(--green-bg);color:#166534;} .chip-green i{background:var(--green);}
+  .chip-amber{background:var(--amber-bg);color:#92400E;} .chip-amber i{background:var(--amber);}
+  .chip-red{background:var(--red-bg);color:#991B1B;} .chip-red i{background:var(--red);}
+  .chip-blue{background:var(--primary-100);color:var(--primary-dark);} .chip-blue i{background:var(--primary);}
+  .chip-purple{background:var(--purple-bg);color:#5B21B6;} .chip-purple i{background:var(--purple);}
+  .chip-gray{background:var(--gray-100);color:var(--gray-600);} .chip-gray i{background:var(--gray-400);}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{background:var(--gray-50);color:var(--gray-500);text-align:left;padding:11px 14px;font-weight:700;white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--gray-200);}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;color:var(--gray-700);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--gray-50);}
+  .muted{color:var(--gray-500);}
+  .mono{font-family:'SF Mono',Consolas,monospace;font-size:12.5px;}
+  .req-subject{font-weight:600;color:var(--gray-900);}
+
+  .form-field label{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px;}
+  .form-field select, .form-field input[type=text], .form-field input[type=number], .form-field input[type=date], .form-field input[type=time], .form-field textarea{width:100%;border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;font-family:inherit;color:var(--gray-800);background:#fff;}
+  .form-field select:focus, .form-field input:focus, .form-field textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .form-field textarea{resize:vertical;min-height:80px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gray-900);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .section-label{font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin:0 0 12px;}
+  .toolbar-card{padding:14px 16px;}
+  .toolbar-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .toolbar-row .form-field{min-width:150px;flex:1;}
+  .toolbar-row select, .toolbar-row input{padding:8px 11px;font-size:12.5px;}
+
+  .chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;}
+  .chart-legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-500);}
+  .chart-legend i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+
+  .tabbar{display:flex;background:var(--gray-100);border-radius:10px;padding:4px;gap:4px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{flex:1;text-align:center;padding:9px 14px;border-radius:7px;font-weight:600;cursor:pointer;color:var(--gray-600);white-space:nowrap;font-size:12.5px;}
+  .tab.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .drawer-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;z-index:150;}
+  .drawer-overlay.show{display:block;}
+  .drawer{position:fixed;top:0;right:-460px;width:460px;max-width:92vw;height:100vh;background:#fff;box-shadow:var(--shadow-lg);z-index:151;transition:right .22s ease;display:flex;flex-direction:column;}
+  .drawer.show{right:0;}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--gray-200);}
+  .drawer-head h2{font-size:16px;font-weight:800;margin:0;}
+  .drawer-body{padding:22px;overflow-y:auto;flex:1;}
+  .drawer-foot{padding:16px 22px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:10px;}
+  .modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--gray-100);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-500);}
+  .modal-close svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.2;}
+
+  .pagination{display:flex;align-items:center;justify-content:space-between;padding-top:16px;font-size:12.5px;color:var(--gray-500);flex-wrap:wrap;gap:10px;}
+  .pg-btns{display:flex;align-items:center;gap:6px;}
+  .pg-btn{width:28px;height:28px;border:1px solid var(--gray-200);border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-500);font-size:12px;}
+  .pg-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700;}
+
+  /* ===== ATTENDANCE-SPECIFIC ===== */
+  .emp-cell{display:flex;align-items:center;gap:10px;}
+  .emp-cell .avatar{width:32px;height:32px;font-size:11px;}
+  .emp-cell .e-name{font-weight:600;color:var(--gray-900);font-size:13px;}
+  .emp-cell .e-sub{font-size:11px;color:var(--gray-500);}
+
+  .sched-grid{width:100%;border-collapse:collapse;font-size:12px;}
+  .sched-grid th{background:var(--gray-50);padding:9px 10px;font-size:10.5px;text-transform:uppercase;color:var(--gray-500);border-bottom:1px solid var(--gray-200);}
+  .sched-grid td{padding:8px 10px;border-bottom:1px solid var(--gray-100);text-align:center;}
+  .shift-tag{display:inline-block;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:700;min-width:38px;}
+  .shift-tag.pagi{background:var(--primary-100);color:var(--primary-dark);}
+  .shift-tag.siang{background:var(--amber-bg);color:#92400E;}
+  .shift-tag.malam{background:var(--purple-bg);color:#5B21B6;}
+  .shift-tag.off{background:var(--gray-100);color:var(--gray-400);}
+
+  /* ===== MODAL (Verifikasi Jadwal Kerja) ===== */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:24px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--gray-200);}
+  .modal-head h2{font-size:16px;font-weight:800;margin:0;color:var(--gray-900);}
+  .modal-body{padding:22px 24px;overflow-y:auto;flex:1;}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--gray-200);}
+
+  /* ===== JADWAL VERIFIKASI: kode jadwal (keluarga warna dingin — terpisah dari warna status hijau/kuning/merah) ===== */
+  .jv-code{display:inline-flex;align-items:center;justify-content:center;min-width:32px;padding:4px 6px;border-radius:6px;font-size:10.5px;font-weight:800;}
+  .jv-code.r{background:#DBEAFE;color:#1D4ED8;}
+  .jv-code.p{background:#EDE9FE;color:#6D28D9;}
+  .jv-code.s1{background:#CFFAFE;color:#0E7490;}
+  .jv-code.s2{background:#E0E7FF;color:#4338CA;}
+  .jv-code.s3{background:#F5D0FE;color:#A21CAF;}
+  .jv-code.off{background:var(--gray-100);color:var(--gray-400);font-weight:700;}
+  .jv-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .jv-table th, .jv-table td{padding:7px 4px;text-align:center;border-bottom:1px solid var(--gray-100);white-space:nowrap;}
+  .jv-table thead th{background:var(--gray-50);color:var(--gray-500);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--gray-200);}
+  .jv-table th.jv-weekend{color:var(--red);}
+  .jv-table td:first-child, .jv-table th:first-child{text-align:left;padding:10px 14px;position:sticky;left:0;background:#fff;z-index:1;}
+  .jv-table td:nth-child(2), .jv-table th:nth-child(2){text-align:left;padding:10px 12px;min-width:150px;}
+  .jv-table thead th:first-child{background:var(--gray-50);z-index:2;}
+  .jv-table td.jv-total{font-weight:700;color:var(--gray-800);}
+
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{text-align:center;font-size:10.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;padding-bottom:6px;}
+  .cal-cell{border:1px solid var(--gray-200);border-radius:8px;min-height:76px;padding:6px 8px;font-size:11px;position:relative;}
+  .cal-cell.othermonth{background:var(--gray-50);color:var(--gray-300);}
+  .cal-cell .cd-num{font-weight:700;font-size:12px;color:var(--gray-700);}
+  .cal-cell.holiday{background:var(--red-bg);border-color:#FCA5A5;}
+  .cal-cell.holiday .cd-num{color:var(--red);}
+  .cal-cell.company-holiday{background:var(--purple-bg);border-color:#DDD6FE;}
+  .cal-cell.special{background:var(--amber-bg);border-color:#FDE68A;}
+  .cal-cell .cd-label{font-size:9.5px;font-weight:700;margin-top:3px;line-height:1.3;display:block;}
+  .cal-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;}
+  .cal-legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-600);}
+  .cal-legend i{width:12px;height:12px;border-radius:4px;display:inline-block;}
+
+  .device-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-100);}
+  .device-row:last-child{border-bottom:none;}
+  .device-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .device-dot.online{background:var(--green);}
+  .device-dot.offline{background:var(--red);}
+  .device-name{font-weight:600;font-size:13px;color:var(--gray-900);}
+  .device-loc{font-size:11.5px;color:var(--gray-500);}
+
+  .map-placeholder{background:linear-gradient(135deg, #E0F2FE 0%, #EFF6FF 100%);border:1px solid var(--gray-200);border-radius:var(--radius);height:360px;position:relative;overflow:hidden;}
+  .map-placeholder svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5;}
+  .map-pin{position:absolute;width:26px;height:26px;border-radius:50% 50% 50% 0;background:var(--primary);transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);}
+  .map-pin.alert{background:var(--red);}
+  .map-pin span{transform:rotate(45deg);width:8px;height:8px;background:#fff;border-radius:50%;}
+
+  .live-feed-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-100);font-size:12.5px;}
+  .live-feed-row:last-child{border-bottom:none;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 0 3px var(--green-bg);}
+
+  @media (max-width:1200px){
+    .cal-grid{grid-template-columns:repeat(7,minmax(90px,1fr));overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+          <circle cx="13" cy="13" r="12" fill="#10b981"/>
+          <circle cx="25" cy="13" r="12" fill="#3b82f6" opacity="0.85"/>
+          <circle cx="13" cy="25" r="12" fill="#f97316" opacity="0.85"/>
+          <circle cx="25" cy="25" r="12" fill="#8b5cf6" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="name">Dasaria</div>
+    </div>
+    <div class="menu-label">Menu</div>
+    <a class="menu-item" href="dashboard-hc.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a class="menu-item" href="dashboard-hc.html#struktur">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><path d="M12 7.2V12M12 12L5 16.8M12 12l7 4.8"/></svg>
+      Struktur dan Organisasi
+    </a>
+    <div class="menu-item" onclick="toggleSubmenu('sub-master', this)">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+      Data Master Karyawan
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-master" style="display:none">
+      <a class="menu-item" href="data-karyawan.html#datakaryawan">Data Karyawan</a>
+      <a class="menu-item" href="data-karyawan.html#perpanjangankontrak">Perpanjangan Kontrak</a>
+      <a class="menu-item" href="data-karyawan.html#pengundurandiri">Pengunduran Diri</a>
+      <a class="menu-item" href="data-karyawan.html#perubahanorganisasi">Perubahan Organisasi</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-penggajian', this)">
+      <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2.2"/><path d="M2.5 10h19"/><circle cx="17" cy="14.3" r="1.4"/></svg>
+      Penggajian
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-penggajian" style="display:none">
+      <a class="menu-item" data-key="camd" href="arsitektur-kompensasi.html">Arsitektur Kompensasi</a>
+      <a class="menu-item" data-key="konfigurasi" href="konfigurasi-penggajian.html">Payroll Configuration</a>
+      <a class="menu-item" data-key="pph2126" href="pph21-pph26-setting.html">PPh21 &amp; 26 Setting</a>
+      <a class="menu-item" data-key="payroll-dashboard" href="dashboard-hc.html#payroll-dashboard">Dashboard Penggajian</a>
+      <a class="menu-item" data-key="payroll-karyawan" href="payroll-karyawan-detail.html">Data Payroll Karyawan</a>
+      <a class="menu-item" data-key="periode" href="dashboard-hc.html#periode">Periode Gajian</a>
+      <a class="menu-item" data-key="validasi" href="dashboard-hc.html#validasi">Persetujuan Periode Gajian</a>
+      <a class="menu-item" data-key="distribusi" href="dashboard-hc.html#distribusi">Distribusi Gaji &amp; Slip Gaji</a>
+      <a class="menu-item" data-key="kasbon" href="dashboard-hc.html#kasbon">Kasbon</a>
+      <a class="menu-item" data-key="rekonsiliasi" href="rekonsiliasi-payroll.html">Rekonsiliasi Payroll</a>
+      <a class="menu-item" data-key="pengajuan-offering" href="konfigurasi-penggajian.html#offering">Pengajuan Offering<span class="menu-badge" id="badge-pengajuan-offering"></span></a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-jenispengajuan', this)">
+      <svg viewBox="0 0 24 24"><path d="M6 2.5h9l4.5 4.5v14.5H6z"/><path d="M15 2.5V7h4.5M8.5 12.5h7M8.5 16h7"/></svg>
+      Pengajuan &amp; Persetujuan
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-jenispengajuan" style="display:none">
+      <a class="menu-item" href="pengajuan-persetujuan.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#pengajuan">Pengajuan</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#persetujuan">Persetujuan</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#riwayat">Riwayat</a>
+    </div>
+    <div class="menu-item open active-parent" onclick="toggleSubmenu('sub-attendance', this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Jadwal &amp; Kehadiran
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-attendance" style="display:block">
+      <div class="menu-item active" data-page="dashboard" onclick="goPage('dashboard', this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="menu-item" data-page="kehadiran" onclick="goPage('kehadiran', this)">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Kehadiran
+      </div>
+      <div class="menu-item" data-page="jadwal" onclick="goPage('jadwal', this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg>
+        Jadwal Kerja
+      </div>
+      <div class="menu-item" data-page="shift" onclick="goPage('shift', this)">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0115.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg>
+        Shift Management
+      </div>
+      <div class="menu-item" data-page="kalender" onclick="goPage('kalender', this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        Kalender Kerja
+      </div>
+      <div class="menu-item" data-page="monitoring" onclick="goPage('monitoring', this)">
+        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Monitoring
+      </div>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-document', this)">
+      <svg viewBox="0 0 24 24"><path d="M2 20h20M4 20V10l4-3 4 3v10M12 20V6l4-3 4 3v14"/></svg>
+      Dokumen
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-document" style="display:none">
+      <a class="menu-item" href="document.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="document.html#buatdokumen">Buat Dokumen</a>
+      <a class="menu-item" href="document.html#reviewriwayat">Review dan Riwayat<span class="menu-badge" id="badge-reviewriwayat"></span></a>
+      <a class="menu-item" href="document.html#mastertemplate">Master Template</a>
+      <a class="menu-item" href="document.html#kontroldokumen">Kontrol Dokumen</a>
+      <a class="menu-item" href="document.html#repository">Repository</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-rekrutmen', this)">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Rekrutmen
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-rekrutmen" style="display:none">
+      <a class="menu-item" href="rekrutmen.html#dashboard">Dashboard Rekrutmen</a>
+      <a class="menu-item" href="rekrutmen.html#lowongan">Lowongan</a>
+      <a class="menu-item" href="rekrutmen.html#kandidat">Kandidat</a>
+      <a class="menu-item" href="rekrutmen.html#konfigurasi">Konfigurasi Rekrutmen</a>
+      <a class="menu-item" href="rekrutmen.html#offering">Status Pengajuan</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-talent', this)">
+      <svg viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V17c0 1.1 2.7 3 6 3s6-1.9 6-3v-4.5"/></svg>
+      Manajemen Talenta
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-talent" style="display:none">
+      <a class="menu-item" href="learning-center-hc.html">Pusat Pembelajaran</a>
+      <a class="menu-item" href="performance-management-hc.html">Manajemen Performa</a>
+      <a class="menu-item" href="talent-assessment-hc.html">Pusat Assesment Talenta</a>
+    </div>
+    <a class="menu-item" href="user-management.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Manajemen Pengguna
+    </a>
+
+    <div class="sidebar-foot">
+      <div class="sidebar-user">
+        <div class="avatar">TA</div>
+        <div>
+          <div class="u-name">Tes Admin</div>
+          <div class="u-role">Head of Human Capital</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Cari nama karyawan, NIP, atau device...">
+      </div>
+      <div class="topbar-right">
+        <div class="form-field" style="min-width:0;">
+          <select id="role-switcher" onchange="setRole(this.value)" title="Simulasi hak akses per role" style="border:1px solid var(--gray-200);border-radius:20px;padding:7px 12px;font-size:12px;font-weight:600;font-family:inherit;color:var(--gray-600);background:var(--gray-50);">
+            <option value="Employee">Role: Employee</option>
+            <option value="Supervisor">Role: Supervisor</option>
+            <option value="Manager">Role: Manager</option>
+            <option value="HR" selected>Role: HR</option>
+            <option value="System Administrator">Role: System Administrator</option>
+          </select>
+        </div>
+        <div class="icon-btn" title="Notifikasi"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="dot"></span></div>
+        <div class="icon-btn" title="Bantuan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2 1.5-2 3.5"/><path d="M12 17h.01"/></svg></div>
+        <div class="topbar-user">
+          <div class="avatar">TA</div>
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="var(--gray-400)" fill="none" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-bar" id="loading-bar"></div>
+    <div class="content">
+
+      <div class="breadcrumb-trail" id="breadcrumb-trail">Home / Jadwal &amp; Kehadiran / <b>Dashboard</b></div>
+
+      <!-- ============================================================ -->
+      <!-- PAGE: DASHBOARD -->
+      <!-- ============================================================ -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div>
+            <h1>Dashboard</h1>
+            <div class="sub">Ringkasan kehadiran &amp; jadwal kerja seluruh perusahaan — hari ini</div>
+          </div>
+          <button class="btn btn-outline"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> 27 Juli 2026</button>
+        </div>
+
+        <div class="grid-12" style="margin-bottom:16px;">
+          <div class="col-4 kpi-card">
+            <div class="top"><div class="kpi-icon" style="background:var(--green-bg);color:var(--green)"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div></div>
+            <div class="lbl">Today's Attendance</div>
+            <div class="val">476 / 512</div>
+            <div class="kpi-delta up"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg> 93,0% hadir</div>
+          </div>
+          <div class="col-4 kpi-card">
+            <div class="top"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div>
+            <div class="lbl">Late Employees</div>
+            <div class="val">18</div>
+            <div class="kpi-delta down">3,5% dari total hadir</div>
+          </div>
+          <div class="col-4 kpi-card">
+            <div class="top"><div class="kpi-icon" style="background:var(--red-bg);color:var(--red)"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M17 8l4 4M21 8l-4 4"/></svg></div></div>
+            <div class="lbl">Absent Employees</div>
+            <div class="val">36</div>
+            <div class="kpi-delta flat">12 izin · 9 sakit · 15 alpa</div>
+          </div>
+          <div class="col-4 kpi-card">
+            <div class="top"><div class="kpi-icon" style="background:var(--primary-100);color:var(--primary-dark)"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div>
+            <div class="lbl">Working Hours (Avg)</div>
+            <div class="val">7,8 jam</div>
+            <div class="kpi-delta up"><svg viewBox="0 0 24 24"><path d="M6 9l6-6 6 6"/></svg> Sesuai target 8 jam</div>
+          </div>
+          <div class="col-4 kpi-card">
+            <div class="top"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div>
+            <div class="lbl">Overtime Summary</div>
+            <div class="val">142 jam</div>
+            <div class="kpi-delta up"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg> 8,2% vs kemarin</div>
+          </div>
+          <div class="col-4 kpi-card" style="display:flex;flex-direction:column;justify-content:center;">
+            <div class="lbl" style="margin-bottom:10px;">Schedule Coverage</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1;height:8px;background:var(--gray-100);border-radius:6px;overflow:hidden;"><div style="width:97%;height:100%;background:var(--green);"></div></div>
+              <b style="font-size:15px;color:var(--gray-900);">97%</b>
+            </div>
+            <div class="muted" style="font-size:11.5px;margin-top:8px;">15 karyawan belum terjadwal minggu ini</div>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          <div class="col-8 card">
+            <div class="card-head"><h2>Attendance Trend</h2><span class="muted" style="font-size:12px;">14 hari terakhir</span></div>
+            <svg viewBox="0 0 1000 220" style="width:100%;height:auto;display:block;">
+              <g stroke="#E2E8F0" stroke-width="1"><line x1="40" y1="180" x2="980" y2="180"/><line x1="40" y1="135" x2="980" y2="135"/><line x1="40" y1="90" x2="980" y2="90"/><line x1="40" y1="45" x2="980" y2="45"/></g>
+              <polyline points="60,60 130,65 200,55 270,90 340,62 410,58 480,64 550,150 620,60 690,56 760,62 830,58 900,52 960,55" fill="none" stroke="#16A34A" stroke-width="2.5"/>
+              <polyline points="60,175 130,172 200,178 270,140 340,174 410,176 480,172 550,80 620,175 690,177 760,173 830,176 900,178 960,176" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-dasharray="5 4"/>
+              <g font-size="11" fill="#94A3B8" text-anchor="middle" font-family="Inter, sans-serif">
+                <text x="60" y="200">14 Jul</text><text x="200" y="200">16 Jul</text><text x="340" y="200">18 Jul</text><text x="480" y="200">20 Jul</text><text x="620" y="200">22 Jul</text><text x="760" y="200">24 Jul</text><text x="900" y="200">26 Jul</text>
+              </g>
+            </svg>
+            <div class="chart-legend"><span><i style="background:#16A34A"></i>Hadir</span><span><i style="background:#DC2626"></i>Tidak Hadir</span></div>
+          </div>
+          <div class="col-4 card">
+            <div class="card-head"><h2>Attendance by Status</h2></div>
+            <div style="display:flex;align-items:center;gap:18px;">
+              <svg viewBox="0 0 130 130" style="width:110px;height:110px;flex-shrink:0;">
+                <circle cx="65" cy="65" r="50" fill="none" stroke="#E2E8F0" stroke-width="17"/>
+                <circle cx="65" cy="65" r="50" fill="none" stroke="#16A34A" stroke-width="17" stroke-dasharray="266.6 314.2" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+                <circle cx="65" cy="65" r="50" fill="none" stroke="#D97706" stroke-width="17" stroke-dasharray="24.4 314.2" stroke-dashoffset="-266.6" transform="rotate(-90 65 65)"/>
+                <circle cx="65" cy="65" r="50" fill="none" stroke="#DC2626" stroke-width="17" stroke-dasharray="23.2 314.2" stroke-dashoffset="-291" transform="rotate(-90 65 65)"/>
+                <text x="65" y="61" text-anchor="middle" font-size="15" font-weight="800" fill="#0F172A" font-family="Inter">93,0%</text>
+                <text x="65" y="78" text-anchor="middle" font-size="9" fill="#94A3B8" font-family="Inter">Hadir</text>
+              </svg>
+              <div style="display:flex;flex-direction:column;gap:9px;font-size:12px;">
+                <span style="display:flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:2px;background:#16A34A;display:inline-block;"></i>Hadir (476)</span>
+                <span style="display:flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:2px;background:#D97706;display:inline-block;"></i>Terlambat (18)</span>
+                <span style="display:flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:2px;background:#DC2626;display:inline-block;"></i>Tidak Hadir (36)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END DASHBOARD -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: KEHADIRAN -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-kehadiran">
+        <div class="page-head">
+          <div>
+            <h1>Kehadiran</h1>
+            <div class="sub">Daftar kehadiran harian karyawan seluruh cabang</div>
+          </div>
+          <button class="btn btn-outline perm-manage"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> Export</button>
+        </div>
+
+        <div class="grid-12" style="margin-bottom:16px;">
+          <div class="col-3 card" style="padding:16px 18px;"><div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Hadir</div><div style="font-size:22px;font-weight:800;color:var(--green);">476</div></div>
+          <div class="col-3 card" style="padding:16px 18px;"><div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Terlambat</div><div style="font-size:22px;font-weight:800;color:var(--amber);">18</div></div>
+          <div class="col-3 card" style="padding:16px 18px;"><div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Tidak Hadir</div><div style="font-size:22px;font-weight:800;color:var(--red);">21</div></div>
+          <div class="col-3 card" style="padding:16px 18px;"><div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Izin / Cuti</div><div style="font-size:22px;font-weight:800;color:var(--primary);">15</div></div>
+        </div>
+
+        <div class="card toolbar-card" style="margin-bottom:16px;">
+          <div class="toolbar-row">
+            <div class="form-field" style="min-width:220px;">
+              <div class="topbar-search" style="min-width:0;">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="kehadiran-search" oninput="renderKehadiranTable()" placeholder="Cari nama / NIP...">
+              </div>
+            </div>
+            <div class="form-field"><input type="text" value="27 Juli 2026" onfocus="this.type='date'"></div>
+            <div class="form-field"><select><option>Semua Perusahaan</option><option>PT Dasarata</option><option>Griyanet</option></select></div>
+            <div class="form-field"><select><option>Semua Cabang</option><option>Kantor Pusat</option><option>Malang Raya</option><option>Kediri Raya</option><option>Blitar Raya</option><option>Tulungagung Raya</option></select></div>
+            <div class="form-field"><select><option>Semua Status</option><option>Hadir</option><option>Terlambat</option><option>Tidak Hadir</option><option>Izin</option></select></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Karyawan</th><th>Cabang</th><th>Jam Masuk</th><th>Jam Keluar</th><th>Durasi Kerja</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="kehadiran-tbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" style="padding:16px 20px;">
+            <span>Menampilkan 1–10 dari 512 karyawan</span>
+            <div class="pg-btns">
+              <button class="pg-btn"><svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">3</button><span class="muted">…</span><button class="pg-btn">52</button>
+              <button class="pg-btn"><svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END KEHADIRAN -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: JADWAL KERJA -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-jadwal">
+        <div class="page-head">
+          <div>
+            <h1>Jadwal Kerja</h1>
+            <div class="sub">Susun, kelola, dan verifikasi jadwal kerja karyawan Head Office &amp; Branch</div>
+          </div>
+        </div>
+
+        <div class="tabbar" style="max-width:360px;">
+          <div class="tab active" onclick="switchTab(this,'jksec-susun')">Susun Jadwal</div>
+          <div class="tab" onclick="switchTab(this,'jksec-verifikasi')">Verifikasi &amp; Validasi</div>
+        </div>
+
+        <!-- ===== TAB: SUSUN JADWAL ===== -->
+        <div class="tab-panel active" id="jksec-susun">
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px;">
+            <span class="chip chip-gray">Draft</span>
+            <button class="btn btn-primary perm-publish" onclick="showToast('Jadwal minggu ini berhasil dipublish ke seluruh karyawan.')"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Publish Schedule</button>
+          </div>
+
+          <div class="grid-12" style="margin-bottom:16px;">
+            <div class="col-3 kpi-card"><div class="lbl">Total Terjadwal</div><div class="val">497</div></div>
+            <div class="col-3 kpi-card"><div class="lbl">Draft</div><div class="val" style="color:var(--gray-500);">1 minggu</div></div>
+            <div class="col-3 kpi-card"><div class="lbl">Published</div><div class="val" style="color:var(--green);">3 minggu</div></div>
+            <div class="col-3 kpi-card"><div class="lbl">Belum Terjadwal</div><div class="val" style="color:var(--red);">15</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Employee Assignment — Minggu 27 Jul – 2 Ags 2026</h2>
+              <div class="tabbar" style="margin-bottom:0;max-width:280px;">
+                <div class="tab active" onclick="switchTab(this,'jadwal-weekly')">Weekly</div>
+                <div class="tab" onclick="switchTab(this,'jadwal-monthly')">Monthly</div>
+              </div>
+            </div>
+            <div class="tab-panel active" id="jadwal-weekly">
+              <div class="table-wrap">
+                <table class="sched-grid">
+                  <thead><tr><th style="text-align:left;">Karyawan</th><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th><th>Min</th></tr></thead>
+                  <tbody id="jadwal-tbody"></tbody>
+                </table>
+              </div>
+              <div class="chart-legend">
+                <span><i style="background:#DBEAFE"></i>Shift Pagi (08:00–16:00)</span>
+                <span><i style="background:#FEF3C7"></i>Shift Siang (14:00–22:00)</span>
+                <span><i style="background:#EDE9FE"></i>Shift Malam (22:00–06:00)</span>
+                <span><i style="background:#F1F5F9"></i>Libur (OFF)</span>
+              </div>
+            </div>
+            <div class="tab-panel" id="jadwal-monthly">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+                <div class="es-title">Tampilan bulanan sedang disiapkan</div>
+                <div class="es-desc">Gunakan tampilan Weekly untuk saat ini — data mingguan tetap sinkron dengan Monthly.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB: VERIFIKASI & VALIDASI ===== -->
+        <div class="tab-panel" id="jksec-verifikasi">
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="jvChangePeriod(-1)" title="Bulan sebelumnya"><svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div style="font-weight:800;font-size:15px;color:var(--gray-900);min-width:130px;text-align:center;" id="jv-period-label">Juli 2026</div>
+              <button class="btn btn-outline btn-sm" onclick="jvChangePeriod(1)" title="Bulan berikutnya"><svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <div class="form-field" style="min-width:190px;"><select id="jv-filter-direktorat" onchange="jvOnFilterChange()"></select></div>
+              <div class="form-field" style="min-width:190px;"><select id="jv-filter-branch" onchange="jvOnFilterChange()"></select></div>
+            </div>
+          </div>
+
+          <div class="grid-12" style="margin-bottom:16px;">
+            <div class="col-8 card">
+              <div class="card-head"><h2>Ringkasan Verifikasi</h2><span class="muted" style="font-size:12px;">Periode <span id="jv-period-label2">Juli 2026</span></span></div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+                <div>
+                  <div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Total Karyawan</div>
+                  <div style="font-size:22px;font-weight:800;color:var(--gray-900);">497</div>
+                  <div class="muted" style="font-size:11px;">Semua Direktorat</div>
+                </div>
+                <div>
+                  <div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Sudah Diverifikasi</div>
+                  <div style="font-size:22px;font-weight:800;color:var(--green);">186</div>
+                  <div class="muted" style="font-size:11px;">37,4% dari total</div>
+                </div>
+                <div>
+                  <div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Belum Diverifikasi</div>
+                  <div style="font-size:22px;font-weight:800;color:var(--amber);">311</div>
+                  <div class="muted" style="font-size:11px;">62,6% dari total</div>
+                </div>
+                <div>
+                  <div class="lbl" style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">Perlu Revisi</div>
+                  <div style="font-size:22px;font-weight:800;color:var(--red);">58</div>
+                  <div class="muted" style="font-size:11px;">11,6% dari total</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-4 card">
+              <div class="card-head"><h2>Status Verifikasi</h2></div>
+              <div style="display:flex;align-items:center;gap:16px;">
+                <svg viewBox="0 0 130 130" width="100" height="100" style="flex-shrink:0;">
+                  <circle cx="65" cy="65" r="50" fill="none" stroke="#E2E8F0" stroke-width="17"/>
+                  <circle cx="65" cy="65" r="50" fill="none" stroke="#16A34A" stroke-width="17" stroke-dasharray="80.9 314.2" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+                  <circle cx="65" cy="65" r="50" fill="none" stroke="#D97706" stroke-width="17" stroke-dasharray="196.7 314.2" stroke-dashoffset="-80.9" transform="rotate(-90 65 65)"/>
+                  <circle cx="65" cy="65" r="50" fill="none" stroke="#DC2626" stroke-width="17" stroke-dasharray="36.6 314.2" stroke-dashoffset="-277.6" transform="rotate(-90 65 65)"/>
+                  <text x="65" y="61" text-anchor="middle" font-size="17" font-weight="800" fill="#0F172A" font-family="Inter">497</text>
+                  <text x="65" y="78" text-anchor="middle" font-size="9.5" fill="#94A3B8" font-family="Inter">Total</text>
+                </svg>
+                <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+                  <span style="display:flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:2px;background:#16A34A;display:inline-block;flex-shrink:0;"></i>Disetujui — 128 (25,8%)</span>
+                  <span style="display:flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:2px;background:#D97706;display:inline-block;flex-shrink:0;"></i>Menunggu — 311 (62,6%)</span>
+                  <span style="display:flex;align-items:center;gap:6px;"><i style="width:8px;height:8px;border-radius:2px;background:#DC2626;display:inline-block;flex-shrink:0;"></i>Perlu Revisi — 58 (11,6%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-head"><h2>Aksi Verifikasi</h2><span class="muted" style="font-size:12px;">Verifikasi seluruh jadwal karyawan sekaligus per Branch atau per Direktorat</span></div>
+            <div class="grid-12">
+              <div class="col-6">
+                <div class="section-label">Per Branch</div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Branch</th><th>Karyawan</th><th>Progres</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody id="jv-branch-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="section-label">Per Direktorat</div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Direktorat</th><th>Karyawan</th><th>Progres</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody id="jv-direktorat-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:0;">
+            <div class="card-head" style="padding:20px 20px 0;">
+              <h2>Detail Jadwal Karyawan</h2>
+              <div class="chart-legend" style="margin-top:0;">
+                <span><i style="background:#DBEAFE"></i>R — Reguler</span>
+                <span><i style="background:#EDE9FE"></i>P — Project</span>
+                <span><i style="background:#CFFAFE"></i>S1 — Shift 1</span>
+                <span><i style="background:#E0E7FF"></i>S2 — Shift 2</span>
+                <span><i style="background:#F5D0FE"></i>S3 — Shift 3</span>
+                <span><i style="background:#F1F5F9"></i>OFF</span>
+              </div>
+            </div>
+            <div class="table-wrap" style="padding:16px 20px 0;">
+              <table class="jv-table">
+                <thead><tr id="jv-thead-row"></tr></thead>
+                <tbody id="jv-detail-tbody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" style="padding:16px 20px;">
+              <span>Menampilkan 1–8 dari 497 karyawan</span>
+              <div class="pg-btns">
+                <button class="pg-btn active">1</button><button class="pg-btn">2</button><button class="pg-btn">3</button><span class="muted">…</span><button class="pg-btn">63</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END JADWAL KERJA -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: SHIFT MANAGEMENT -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-shift">
+        <div class="page-head">
+          <div>
+            <h1>Shift Management</h1>
+            <div class="sub">Kelola master shift, pola rotasi, dan penugasan shift karyawan</div>
+          </div>
+          <button class="btn btn-primary perm-manage" onclick="showToast('Shift baru tersimpan.')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Tambah Shift</button>
+        </div>
+
+        <div class="tabbar" style="max-width:520px;">
+          <div class="tab active" onclick="switchTab(this,'shift-master')">Shift Master</div>
+          <div class="tab" onclick="switchTab(this,'shift-rotation')">Rotation</div>
+          <div class="tab" onclick="switchTab(this,'shift-pattern')">Pattern</div>
+          <div class="tab" onclick="switchTab(this,'shift-assignment')">Assignment</div>
+        </div>
+
+        <div class="tab-panel active" id="shift-master">
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Kode</th><th>Nama Shift</th><th>Jam Masuk</th><th>Jam Keluar</th><th>Toleransi Terlambat</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">SH-01</td><td class="req-subject">Shift Pagi</td><td>08:00</td><td>16:00</td><td>15 menit</td><td><span class="chip chip-green">Active</span></td><td><button class="btn btn-outline btn-sm perm-manage">Edit</button></td></tr>
+                  <tr><td class="mono">SH-02</td><td class="req-subject">Shift Siang</td><td>14:00</td><td>22:00</td><td>15 menit</td><td><span class="chip chip-green">Active</span></td><td><button class="btn btn-outline btn-sm perm-manage">Edit</button></td></tr>
+                  <tr><td class="mono">SH-03</td><td class="req-subject">Shift Malam</td><td>22:00</td><td>06:00</td><td>10 menit</td><td><span class="chip chip-green">Active</span></td><td><button class="btn btn-outline btn-sm perm-manage">Edit</button></td></tr>
+                  <tr><td class="mono">SH-04</td><td class="req-subject">Shift Kantor Pusat</td><td>08:30</td><td>17:30</td><td>10 menit</td><td><span class="chip chip-green">Active</span></td><td><button class="btn btn-outline btn-sm perm-manage">Edit</button></td></tr>
+                  <tr><td class="mono">SH-05</td><td class="req-subject">Shift Weekend</td><td>09:00</td><td>15:00</td><td>15 menit</td><td><span class="chip chip-gray">Nonaktif</span></td><td><button class="btn btn-outline btn-sm perm-manage">Edit</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="shift-rotation">
+          <div class="card">
+            <div class="card-head"><h2>Pola Rotasi Shift</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nama Rotasi</th><th>Urutan</th><th>Siklus</th><th>Cabang Berlaku</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td class="req-subject">Rotasi 3 Shift Mingguan</td><td>Pagi → Siang → Malam</td><td>7 hari</td><td>Kantor Pusat</td><td><span class="chip chip-green">Active</span></td></tr>
+                  <tr><td class="req-subject">Rotasi Cabang 2 Shift</td><td>Pagi → Siang</td><td>14 hari</td><td>Semua Cabang</td><td><span class="chip chip-green">Active</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="shift-pattern">
+          <div class="card">
+            <div class="card-head"><h2>Shift Pattern</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nama Pattern</th><th>Kerja</th><th>Libur</th><th>Deskripsi</th></tr></thead>
+                <tbody>
+                  <tr><td class="req-subject">5-2 Standar</td><td>5 hari</td><td>2 hari (Sab–Min)</td><td class="muted">Karyawan kantor pusat</td></tr>
+                  <tr><td class="req-subject">6-1 Cabang</td><td>6 hari</td><td>1 hari (bergilir)</td><td class="muted">Karyawan cabang / operasional</td></tr>
+                  <tr><td class="req-subject">4-3 Compressed</td><td>4 hari</td><td>3 hari</td><td class="muted">Pilot program — Direktorat Teknologi</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="shift-assignment">
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Karyawan</th><th>Cabang</th><th>Shift Saat Ini</th><th>Pattern</th><th>Rotasi</th><th>Aksi</th></tr></thead>
+                <tbody id="shift-assignment-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END SHIFT MANAGEMENT -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: KALENDER KERJA -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-kalender">
+        <div class="page-head">
+          <div>
+            <h1>Kalender Kerja</h1>
+            <div class="sub">Kalender perusahaan — libur nasional, libur perusahaan, dan hari kerja khusus</div>
+          </div>
+          <button class="btn btn-primary perm-manage" onclick="showToast('Tanggal khusus baru tersimpan.')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Tambah Tanggal</button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Juli 2026</h2>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-outline btn-sm"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button class="btn btn-outline btn-sm"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-dow">Sen</div><div class="cal-dow">Sel</div><div class="cal-dow">Rab</div><div class="cal-dow">Kam</div><div class="cal-dow">Jum</div><div class="cal-dow">Sab</div><div class="cal-dow">Min</div>
+            <div class="cal-cell othermonth"><span class="cd-num">29</span></div>
+            <div class="cal-cell othermonth"><span class="cd-num">30</span></div>
+            <div class="cal-cell"><span class="cd-num">1</span></div>
+            <div class="cal-cell"><span class="cd-num">2</span></div>
+            <div class="cal-cell"><span class="cd-num">3</span></div>
+            <div class="cal-cell special"><span class="cd-num">4</span><span class="cd-label">Hari Kerja Pengganti</span></div>
+            <div class="cal-cell"><span class="cd-num">5</span></div>
+            <div class="cal-cell"><span class="cd-num">6</span></div>
+            <div class="cal-cell"><span class="cd-num">7</span></div>
+            <div class="cal-cell"><span class="cd-num">8</span></div>
+            <div class="cal-cell"><span class="cd-num">9</span></div>
+            <div class="cal-cell"><span class="cd-num">10</span></div>
+            <div class="cal-cell"><span class="cd-num">11</span></div>
+            <div class="cal-cell"><span class="cd-num">12</span></div>
+            <div class="cal-cell"><span class="cd-num">13</span></div>
+            <div class="cal-cell"><span class="cd-num">14</span></div>
+            <div class="cal-cell"><span class="cd-num">15</span></div>
+            <div class="cal-cell"><span class="cd-num">16</span></div>
+            <div class="cal-cell holiday"><span class="cd-num">17</span><span class="cd-label">Libur Nasional</span></div>
+            <div class="cal-cell"><span class="cd-num">18</span></div>
+            <div class="cal-cell"><span class="cd-num">19</span></div>
+            <div class="cal-cell"><span class="cd-num">20</span></div>
+            <div class="cal-cell"><span class="cd-num">21</span></div>
+            <div class="cal-cell"><span class="cd-num">22</span></div>
+            <div class="cal-cell"><span class="cd-num">23</span></div>
+            <div class="cal-cell company-holiday"><span class="cd-num">24</span><span class="cd-label">Anniversary Perusahaan</span></div>
+            <div class="cal-cell"><span class="cd-num">25</span></div>
+            <div class="cal-cell"><span class="cd-num">26</span></div>
+            <div class="cal-cell" style="border-color:var(--primary);box-shadow:0 0 0 1.5px var(--primary);"><span class="cd-num" style="color:var(--primary);">27</span><span class="cd-label" style="color:var(--primary);">Hari Ini</span></div>
+            <div class="cal-cell"><span class="cd-num">28</span></div>
+            <div class="cal-cell"><span class="cd-num">29</span></div>
+            <div class="cal-cell"><span class="cd-num">30</span></div>
+            <div class="cal-cell"><span class="cd-num">31</span></div>
+            <div class="cal-cell othermonth"><span class="cd-num">1</span></div>
+            <div class="cal-cell othermonth"><span class="cd-num">2</span></div>
+          </div>
+          <div class="cal-legend">
+            <span><i style="background:var(--red-bg);border:1.5px solid #FCA5A5;"></i>National Holiday</span>
+            <span><i style="background:var(--purple-bg);border:1.5px solid #DDD6FE;"></i>Company Holiday</span>
+            <span><i style="background:var(--amber-bg);border:1.5px solid #FDE68A;"></i>Special Working Day</span>
+          </div>
+        </div>
+
+        <div class="grid-12" style="margin-top:16px;">
+          <div class="col-6 card">
+            <div class="card-head"><h2>National Holiday</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Nama</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">17 Jul 2026</td><td>Libur Nasional</td></tr>
+                  <tr><td class="mono">17 Agu 2026</td><td>Hari Kemerdekaan RI</td></tr>
+                  <tr><td class="mono">25 Des 2026</td><td>Hari Raya Natal</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-6 card">
+            <div class="card-head"><h2>Company Holiday &amp; Special Working Day</h2></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Nama</th><th>Tipe</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">4 Jul 2026</td><td>Hari Kerja Pengganti</td><td><span class="chip chip-amber">Special Working Day</span></td></tr>
+                  <tr><td class="mono">24 Jul 2026</td><td>Anniversary Perusahaan</td><td><span class="chip chip-purple">Company Holiday</span></td></tr>
+                  <tr><td class="mono">31 Des 2026</td><td>Cuti Bersama Akhir Tahun</td><td><span class="chip chip-purple">Company Holiday</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END KALENDER KERJA -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: MONITORING -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-monitoring">
+        <div class="page-head">
+          <div>
+            <h1>Monitoring</h1>
+            <div class="sub">Pemantauan kehadiran real-time, GPS, peta lokasi, dan status perangkat</div>
+          </div>
+        </div>
+
+        <div class="tabbar" style="max-width:760px;">
+          <div class="tab active" onclick="switchTab(this,'mon-live')">Live Attendance</div>
+          <div class="tab" onclick="switchTab(this,'mon-gps')">GPS Attendance</div>
+          <div class="tab" onclick="switchTab(this,'mon-map')">Attendance Map</div>
+          <div class="tab" onclick="switchTab(this,'mon-exceptions')">Exceptions</div>
+          <div class="tab" onclick="switchTab(this,'mon-devices')">Device Status</div>
+          <div class="tab" onclick="switchTab(this,'mon-logs')">Logs</div>
+        </div>
+
+        <div class="tab-panel active" id="mon-live">
+          <div class="card">
+            <div class="card-head"><h2>Live Attendance Feed</h2><span class="chip chip-green"><i></i>Live</span></div>
+            <div id="live-feed"></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="mon-gps">
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Karyawan</th><th>Waktu</th><th>Latitude</th><th>Longitude</th><th>Akurasi</th><th>Jarak dari Kantor</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td class="req-subject">Ahmad Fauzi</td><td class="mono">08:02:14</td><td class="mono">-7.9666</td><td class="mono">112.6326</td><td>8 m</td><td>12 m</td><td><span class="chip chip-green">Dalam Radius</span></td></tr>
+                  <tr><td class="req-subject">Dewi Kusuma</td><td class="mono">08:14:52</td><td class="mono">-7.8168</td><td class="mono">112.0114</td><td>15 m</td><td>340 m</td><td><span class="chip chip-red">Luar Radius</span></td></tr>
+                  <tr><td class="req-subject">Sinta Aulia</td><td class="mono">07:55:03</td><td class="mono">-8.0645</td><td class="mono">111.9020</td><td>6 m</td><td>4 m</td><td><span class="chip chip-green">Dalam Radius</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="mon-map">
+          <div class="card">
+            <div class="card-head"><h2>Attendance Map</h2><span class="muted" style="font-size:12px;">Sebaran presensi real-time per cabang</span></div>
+            <div class="map-placeholder">
+              <svg viewBox="0 0 800 400"><g stroke="#BFDBFE" stroke-width="1"><line x1="0" y1="80" x2="800" y2="80"/><line x1="0" y1="160" x2="800" y2="160"/><line x1="0" y1="240" x2="800" y2="240"/><line x1="0" y1="320" x2="800" y2="320"/><line x1="133" y1="0" x2="133" y2="400"/><line x1="266" y1="0" x2="266" y2="400"/><line x1="400" y1="0" x2="400" y2="400"/><line x1="533" y1="0" x2="533" y2="400"/><line x1="666" y1="0" x2="666" y2="400"/></g></svg>
+              <div class="map-pin" style="top:120px;left:180px;"><span></span></div>
+              <div class="map-pin" style="top:220px;left:360px;"><span></span></div>
+              <div class="map-pin alert" style="top:160px;left:520px;"><span></span></div>
+              <div class="map-pin" style="top:280px;left:620px;"><span></span></div>
+            </div>
+            <div class="chart-legend"><span><i style="background:#2563EB;border-radius:50%;"></i>Presensi Normal</span><span><i style="background:#DC2626;border-radius:50%;"></i>Luar Radius / Anomali</span></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="mon-exceptions">
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Karyawan</th><th>Cabang</th><th>Jenis Exception</th><th>Waktu</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td class="req-subject">Dewi Kusuma</td><td>Kediri Raya</td><td>Presensi di luar radius kantor</td><td class="mono">08:14:52</td><td><span class="chip chip-red">Perlu Review</span></td></tr>
+                  <tr><td class="req-subject">Yoga Adi</td><td>Malang Raya</td><td>Tidak ada jam keluar (lupa absen pulang)</td><td class="mono">—</td><td><span class="chip chip-amber">Menunggu Koreksi</span></td></tr>
+                  <tr><td class="req-subject">Rizky Pratama</td><td>Blitar Raya</td><td>Double check-in dalam 5 menit</td><td class="mono">07:58:10</td><td><span class="chip chip-amber">Menunggu Koreksi</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="mon-devices">
+          <div class="card">
+            <div class="card-head"><h2>Device Status</h2><span class="muted" style="font-size:12px;">18 dari 20 perangkat online</span></div>
+            <div id="device-list"></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="mon-logs">
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Timestamp</th><th>Karyawan</th><th>Device</th><th>Tipe</th><th>Hasil</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">27 Jul 2026, 08:02:14</td><td>Ahmad Fauzi</td><td>FP-MLG-01</td><td>Check-in</td><td><span class="chip chip-green">Sukses</span></td></tr>
+                  <tr><td class="mono">27 Jul 2026, 08:03:01</td><td>Nanda Putri</td><td>FACE-HO-02</td><td>Check-in</td><td><span class="chip chip-green">Sukses</span></td></tr>
+                  <tr><td class="mono">27 Jul 2026, 08:05:44</td><td>Unknown</td><td>FP-KDR-01</td><td>Check-in</td><td><span class="chip chip-red">Gagal — Wajah/Sidik Tidak Cocok</span></td></tr>
+                  <tr><td class="mono">27 Jul 2026, 08:07:19</td><td>Sinta Aulia</td><td>MOBILE-GPS</td><td>Check-in</td><td><span class="chip chip-green">Sukses</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END MONITORING -->
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: KONFIRMASI VERIFIKASI MASSAL ============ -->
+<div class="modal-overlay" id="jv-confirm-overlay" onclick="if(event.target===this) jvCloseConfirm()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="jv-confirm-title">Konfirmasi Verifikasi</h2>
+      <button class="modal-close" onclick="jvCloseConfirm()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="jv-confirm-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="jvCloseConfirm()">Batal</button>
+      <button class="btn btn-primary" onclick="jvConfirmBulk()">Konfirmasi Verifikasi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: TANDAI PERLU REVISI ============ -->
+<div class="modal-overlay" id="jv-revision-overlay" onclick="if(event.target===this) jvCloseRevision()">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head">
+      <h2>Tandai Perlu Revisi</h2>
+      <button class="modal-close" onclick="jvCloseRevision()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="jv-revision-emp" style="font-weight:700;color:var(--gray-900);margin-bottom:12px;"></div>
+      <div class="form-field"><label>Catatan Revisi</label><textarea id="jv-revision-note" placeholder="Jelaskan bagian jadwal yang perlu diperbaiki..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="jvCloseRevision()">Batal</button>
+      <button class="btn btn-danger" onclick="jvSubmitRevision()">Kirim Revisi</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+  function toggleSubmenu(id, el){
+    const sub = document.getElementById(id);
+    const open = sub.style.display !== 'none';
+    sub.style.display = open ? 'none' : 'block';
+    el.classList.toggle('open', !open);
+  }
+
+  // ===== Drag & drop reorder — submenu Penggajian (posisi tersimpan lintas halaman) =====
+  (function initPenggajianDrag(){
+    const container = document.getElementById('sub-penggajian');
+    if(!container) return;
+    const style = document.createElement('style');
+    style.textContent = `
+      #sub-penggajian .menu-item[draggable="true"]{cursor:grab;position:relative;padding-left:38px;}
+      #sub-penggajian .menu-item[draggable="true"]:active{cursor:grabbing;}
+      #sub-penggajian .menu-item[draggable="true"]::before{content:'\\22EE\\22EE';position:absolute;left:16px;top:50%;transform:translateY(-50%) scale(.6);color:#c7cad1;font-size:11px;line-height:1;letter-spacing:-2px;}
+      #sub-penggajian .menu-item.dragging{opacity:.35;}
+      #sub-penggajian .menu-item.drag-over-top{box-shadow:inset 0 2px 0 var(--blue);}
+      #sub-penggajian .menu-item.drag-over-bottom{box-shadow:inset 0 -2px 0 var(--blue);}
+    `;
+    document.head.appendChild(style);
+
+    const itemKey = el => el.getAttribute('data-key') || el.getAttribute('href') || el.textContent.trim();
+    const items = () => Array.from(container.querySelectorAll(':scope > .menu-item'));
+
+    (function applySavedOrder(){
+      let saved;
+      try{ saved = JSON.parse(localStorage.getItem('dasaria-penggajian-order') || 'null'); }catch(e){ saved = null; }
+      if(!Array.isArray(saved)) return;
+      saved.forEach(key => {
+        const el = items().find(e => itemKey(e) === key);
+        if(el) container.appendChild(el);
+      });
+    })();
+    items().forEach(el => el.setAttribute('draggable','true'));
+
+    let draggingEl = null;
+    container.addEventListener('dragstart', e => {
+      const item = e.target.closest('.menu-item[draggable="true"]');
+      if(!item){ e.preventDefault(); return; }
+      draggingEl = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try{ e.dataTransfer.setData('text/plain', itemKey(item)); }catch(err){}
+    });
+    container.addEventListener('dragend', () => {
+      if(draggingEl) draggingEl.classList.remove('dragging');
+      items().forEach(el => el.classList.remove('drag-over-top','drag-over-bottom'));
+      draggingEl = null;
+      localStorage.setItem('dasaria-penggajian-order', JSON.stringify(items().map(itemKey)));
+    });
+    container.addEventListener('dragover', e => {
+      if(!draggingEl) return;
+      e.preventDefault();
+      const target = e.target.closest('.menu-item[draggable="true"]');
+      items().forEach(el => el.classList.remove('drag-over-top','drag-over-bottom'));
+      if(!target || target === draggingEl) return;
+      const rect = target.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      target.classList.add(before ? 'drag-over-top' : 'drag-over-bottom');
+    });
+    container.addEventListener('drop', e => {
+      if(!draggingEl) return;
+      e.preventDefault();
+      const target = e.target.closest('.menu-item[draggable="true"]');
+      items().forEach(el => el.classList.remove('drag-over-top','drag-over-bottom'));
+      if(!target || target === draggingEl) return;
+      const rect = target.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      container.insertBefore(draggingEl, before ? target : target.nextSibling);
+    });
+  })();
+  function showLoadingBar(){
+    const bar = document.getElementById('loading-bar');
+    bar.style.width = '0'; bar.classList.add('show');
+    requestAnimationFrame(() => { bar.style.width = '70%'; });
+    clearTimeout(window.__loadingBarTimer);
+    window.__loadingBarTimer = setTimeout(() => {
+      bar.style.width = '100%';
+      setTimeout(() => { bar.classList.remove('show'); bar.style.width = '0'; }, 180);
+    }, 220);
+  }
+  const pageLabels = {
+    dashboard:'Dashboard', kehadiran:'Kehadiran', jadwal:'Jadwal Kerja', shift:'Shift Management',
+    kalender:'Kalender Kerja', monitoring:'Monitoring'
+  };
+  function goPage(key, el){
+    showLoadingBar();
+    document.querySelectorAll('.menu-item[data-page]').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const target = document.getElementById('page-' + key);
+    if(target) target.classList.add('active');
+    document.title = 'Dasaria HRIS — ' + pageLabels[key];
+    document.getElementById('breadcrumb-trail').innerHTML = 'Home / Jadwal &amp; Kehadiran / <b>' + pageLabels[key] + '</b>';
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  // ===== Permission simulation (shared pattern with Pengajuan & Persetujuan) =====
+  let currentRole = 'HR';
+  const attendancePerms = {
+    Employee:{approve:false, manage:false, publish:false},
+    Supervisor:{approve:true, manage:false, publish:false},
+    Manager:{approve:true, manage:false, publish:true},
+    HR:{approve:true, manage:true, publish:true},
+    'System Administrator':{approve:false, manage:true, publish:true}
+  };
+  function applyPermissions(){
+    const p = attendancePerms[currentRole];
+    document.querySelectorAll('.perm-approve').forEach(b=>{ b.disabled = !p.approve; b.title = p.approve ? '' : 'Role "' + currentRole + '" tidak memiliki izin ini'; });
+    document.querySelectorAll('.perm-manage').forEach(b=>{ b.disabled = !p.manage; b.title = p.manage ? '' : 'Role "' + currentRole + '" tidak memiliki izin ini'; });
+    document.querySelectorAll('.perm-publish').forEach(b=>{ b.disabled = !p.publish; b.title = p.publish ? '' : 'Role "' + currentRole + '" tidak memiliki izin ini'; });
+  }
+  function setRole(role){
+    currentRole = role;
+    applyPermissions();
+    showToast('Simulasi role diganti ke "' + role + '" — tombol aksi menyesuaikan hak akses.');
+  }
+
+  function switchTab(el, panelId){
+    const prefix = panelId.split('-')[0];
+    document.querySelectorAll('.tab-panel[id^="' + prefix + '-"]').forEach(p=>p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+    el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function initials(name){ return name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); }
+
+  // ===== Kehadiran =====
+  const kehadiranData = [
+    {name:'Ahmad Fauzi', sub:'Supervisor · PT Dasarata', branch:'Malang Raya', in:'08:02', out:'17:05', durasi:'8j 3m', status:'Hadir'},
+    {name:'Siti Rahayu', sub:'Officer Payroll · PT Dasarata', branch:'Kantor Pusat', in:'08:31', out:'17:10', durasi:'7j 39m', status:'Terlambat'},
+    {name:'Budi Santoso', sub:'Direktur · PT Dasarata', branch:'Kantor Pusat', in:'07:48', out:'18:02', durasi:'9j 14m', status:'Hadir'},
+    {name:'Dewi Kusuma', sub:'AE Certified · PT Dasarata', branch:'Kediri Raya', in:'08:14', out:'17:00', durasi:'8j 46m', status:'Hadir'},
+    {name:'Rizky Pratama', sub:'Teknisi · Griyanet', branch:'Blitar Raya', in:'—', out:'—', durasi:'—', status:'Tidak Hadir'},
+    {name:'Sinta Aulia', sub:'Branch Leader · PT Dasarata', branch:'Tulungagung Raya', in:'07:55', out:'16:58', durasi:'8j 3m', status:'Hadir'},
+    {name:'Dimas Setiawan', sub:'Head of Region · PT Dasarata', branch:'Kediri Raya', in:'08:05', out:'17:20', durasi:'9j 15m', status:'Hadir'},
+    {name:'Nanda Putri', sub:'Staff Finance · PT Dasarata', branch:'Kantor Pusat', in:'—', out:'—', durasi:'—', status:'Izin'},
+    {name:'Yoga Adi', sub:'AE · Griyanet', branch:'Malang Raya', in:'08:00', out:'—', durasi:'—', status:'Hadir'},
+    {name:'Fajar Maulana', sub:'Manager Finance · PT Dasarata', branch:'Kantor Pusat', in:'08:42', out:'17:15', durasi:'7j 33m', status:'Terlambat'}
+  ];
+  function statusChipAtt(s){
+    const map = {Hadir:'chip-green', Terlambat:'chip-amber', 'Tidak Hadir':'chip-red', Izin:'chip-blue'};
+    return '<span class="chip ' + map[s] + '"><i></i>' + s + '</span>';
+  }
+  function renderKehadiranTable(){
+    const body = document.getElementById('kehadiran-tbody');
+    if(!body) return;
+    const q = (document.getElementById('kehadiran-search').value || '').trim().toLowerCase();
+    const filtered = q ? kehadiranData.filter(k => k.name.toLowerCase().includes(q)) : kehadiranData;
+    if(filtered.length === 0){
+      body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><div class="es-title">Tidak ada data ditemukan</div><div class="es-desc">Coba ubah kata kunci pencarian.</div></div></td></tr>';
+      return;
+    }
+    body.innerHTML = filtered.map(k => `
+      <tr>
+        <td><div class="emp-cell"><div class="avatar">${initials(k.name)}</div><div><div class="e-name">${k.name}</div><div class="e-sub">${k.sub}</div></div></div></td>
+        <td>${k.branch}</td>
+        <td class="mono">${k.in}</td>
+        <td class="mono">${k.out}</td>
+        <td>${k.durasi}</td>
+        <td>${statusChipAtt(k.status)}</td>
+        <td><button class="btn btn-outline btn-sm perm-manage" onclick="showToast('Membuka form koreksi kehadiran ' + '${k.name}' + '...')">Koreksi</button></td>
+      </tr>
+    `).join('');
+  }
+  renderKehadiranTable();
+
+  // ===== Jadwal Kerja =====
+  const jadwalData = [
+    {name:'Ahmad Fauzi', shifts:['pagi','pagi','pagi','pagi','pagi','off','off']},
+    {name:'Siti Rahayu', shifts:['pagi','pagi','pagi','pagi','pagi','off','off']},
+    {name:'Dewi Kusuma', shifts:['siang','siang','off','pagi','pagi','pagi','off']},
+    {name:'Rizky Pratama', shifts:['malam','malam','malam','off','off','malam','malam']},
+    {name:'Sinta Aulia', shifts:['pagi','pagi','pagi','pagi','off','pagi','off']},
+    {name:'Yoga Adi', shifts:['siang','siang','siang','siang','siang','off','off']}
+  ];
+  const shiftLbl = {pagi:'Pagi', siang:'Siang', malam:'Malam', off:'OFF'};
+  function renderJadwalTable(){
+    const body = document.getElementById('jadwal-tbody');
+    if(!body) return;
+    body.innerHTML = jadwalData.map(j => `
+      <tr>
+        <td style="text-align:left;"><div class="emp-cell"><div class="avatar">${initials(j.name)}</div><div class="e-name">${j.name}</div></div></td>
+        ${j.shifts.map(s => '<td><span class="shift-tag ' + s + '">' + shiftLbl[s] + '</span></td>').join('')}
+      </tr>
+    `).join('');
+  }
+  renderJadwalTable();
+
+  // ===== Jadwal Kerja — Verifikasi & Validasi =====
+  const jvMonthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  let jvState = {y:2026, m:7, direktorat:'', branch:''};
+
+  function jvDaysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+  function jvDow(y,m,d){ return new Date(y, m-1, d).getDay(); }
+
+  const jvBranches = [
+    {name:'Head Office', direktorat:'PCC', total:86, verified:86, status:'Disetujui'},
+    {name:'Cabang Malang', direktorat:'Commercial', total:64, verified:42, status:'Menunggu'},
+    {name:'Cabang Batu', direktorat:'Commercial', total:52, verified:18, status:'Perlu Revisi'},
+    {name:'Cabang Pasuruan', direktorat:'Commercial', total:47, verified:20, status:'Menunggu'},
+    {name:'Cabang Surabaya', direktorat:'Commercial', total:39, verified:39, status:'Disetujui'},
+    {name:'Cabang Probolinggo', direktorat:'Commercial', total:31, verified:12, status:'Perlu Revisi'}
+  ];
+  const jvDirektorats = [
+    {name:'Commercial', total:233, verified:131, status:'Menunggu'},
+    {name:'PCC', total:86, verified:86, status:'Disetujui'},
+    {name:'IT', total:48, verified:28, status:'Menunggu'},
+    {name:'GSSC', total:52, verified:31, status:'Menunggu'},
+    {name:'FAT', total:38, verified:22, status:'Menunggu'},
+    {name:'NOC', total:40, verified:28, status:'Menunggu'}
+  ];
+
+  function jvGenPattern(type){
+    const arr = new Array(31).fill('R');
+    for(let i=0;i<31;i++){
+      const cyc = i % 7;
+      if(type==='reguler'){
+        if(cyc===5 || cyc===6) arr[i]='OFF';
+      } else if(type==='reguler-project'){
+        if(cyc===5 || cyc===6) arr[i]='OFF';
+        if(i>=10 && i<=13) arr[i]='P';
+      } else if(type==='shift-rotasi'){
+        if(cyc===0||cyc===1) arr[i]='S1';
+        else if(cyc===2||cyc===3) arr[i]='S2';
+        else if(cyc===4||cyc===5) arr[i]='S3';
+        else arr[i]='OFF';
+      } else if(type==='reguler-irregular'){
+        if(cyc===6) arr[i]='OFF';
+        if(i>=8 && i<=9) arr[i]='P';
+      }
+    }
+    return arr;
+  }
+
+  const jvEmployees = [
+    {name:'Ahmad Fauzi', npp:'24051201', branch:'Head Office', role:'HR Staff', atasan:'Budi Santoso', atasanRole:'HC Manager', direktorat:'PCC', status:'Disetujui', pattern:jvGenPattern('reguler-project')},
+    {name:'Siti Rahayu', npp:'24051202', branch:'Cabang Malang', role:'AE', atasan:'Dewi Kurnia', atasanRole:'Branch Leader', direktorat:'Commercial', status:'Menunggu', pattern:jvGenPattern('reguler-project')},
+    {name:'Dewi Kusuma', npp:'24051203', branch:'Cabang Batu', role:'Teknisi', atasan:'Rizky Pratama', atasanRole:'Branch Leader', direktorat:'Commercial', status:'Revisi', pattern:jvGenPattern('reguler-irregular')},
+    {name:'Fajar Maulana', npp:'23110045', branch:'Head Office', role:'IT Support', atasan:'Nanda Putri', atasanRole:'IT Manager', direktorat:'IT', status:'Disetujui', pattern:jvGenPattern('shift-rotasi')},
+    {name:'Yusuf Hidayat', npp:'23090012', branch:'Head Office', role:'NOC Engineer', atasan:'Fajar Maulana', atasanRole:'IT Manager', direktorat:'NOC', status:'Menunggu', pattern:jvGenPattern('shift-rotasi')},
+    {name:'Sinta Aulia', npp:'24051205', branch:'Cabang Surabaya', role:'AE', atasan:'Dimas Setiawan', atasanRole:'Head of Region', direktorat:'Commercial', status:'Disetujui', pattern:jvGenPattern('reguler')},
+    {name:'Yoga Adi', npp:'24051206', branch:'Cabang Probolinggo', role:'AE', atasan:'Dimas Setiawan', atasanRole:'Head of Region', direktorat:'Commercial', status:'Revisi', pattern:jvGenPattern('reguler-irregular')},
+    {name:'Budi Santoso', npp:'22010001', branch:'Head Office', role:'HC Manager', atasan:'Tes Admin', atasanRole:'Head of Human Capital', direktorat:'PCC', status:'Disetujui', pattern:jvGenPattern('reguler')}
+  ];
+
+  const jvCodeLbl = {R:'R', P:'P', S1:'S1', S2:'S2', S3:'S3', OFF:'OFF'};
+  function jvCodeBadge(code){
+    return '<span class="jv-code ' + code.toLowerCase() + '">' + jvCodeLbl[code] + '</span>';
+  }
+  function jvStatusChip(status){
+    const map = {Disetujui:'chip-green', Menunggu:'chip-amber', Revisi:'chip-red', 'Perlu Revisi':'chip-red'};
+    const lbl = status === 'Revisi' ? 'Perlu Revisi' : status;
+    return '<span class="chip ' + map[status] + '"><i></i>' + lbl + '</span>';
+  }
+
+  function jvPopulateFilters(){
+    const dSel = document.getElementById('jv-filter-direktorat');
+    const bSel = document.getElementById('jv-filter-branch');
+    if(!dSel || !bSel) return;
+    dSel.innerHTML = '<option value="">Semua Direktorat</option>' + jvDirektorats.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+    bSel.innerHTML = '<option value="">Semua Branch</option>' + jvBranches.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
+  }
+
+  function jvRenderPeriodLabel(){
+    const lbl = jvMonthNames[jvState.m - 1] + ' ' + jvState.y;
+    document.getElementById('jv-period-label').textContent = lbl;
+    document.getElementById('jv-period-label2').textContent = lbl;
+  }
+
+  function jvChangePeriod(delta){
+    let m = jvState.m + delta, y = jvState.y;
+    if(m < 1){ m = 12; y--; } else if(m > 12){ m = 1; y++; }
+    jvState.m = m; jvState.y = y;
+    jvRenderPeriodLabel();
+    jvRenderDetailTable();
+  }
+
+  function jvOnFilterChange(){
+    jvState.direktorat = document.getElementById('jv-filter-direktorat').value;
+    jvState.branch = document.getElementById('jv-filter-branch').value;
+    jvRenderDetailTable();
+  }
+
+  function jvFilterToBranch(name){
+    document.getElementById('jv-filter-branch').value = name;
+    document.getElementById('jv-filter-direktorat').value = '';
+    jvState.branch = name; jvState.direktorat = '';
+    jvRenderDetailTable();
+    document.getElementById('jv-thead-row').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  function jvFilterToDirektorat(name){
+    document.getElementById('jv-filter-direktorat').value = name;
+    document.getElementById('jv-filter-branch').value = '';
+    jvState.direktorat = name; jvState.branch = '';
+    jvRenderDetailTable();
+    document.getElementById('jv-thead-row').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function jvRenderBranchTable(){
+    const body = document.getElementById('jv-branch-tbody');
+    if(!body) return;
+    body.innerHTML = jvBranches.map(b => {
+      const pct = Math.round((b.verified / b.total) * 100);
+      return `
+      <tr>
+        <td><a href="javascript:void(0)" onclick="jvFilterToBranch('${b.name}')" style="color:var(--gray-800);font-weight:600;text-decoration:none;">${b.name}</a></td>
+        <td>${b.total}</td>
+        <td>
+          <div style="font-size:11px;color:var(--gray-500);margin-bottom:3px;">${b.verified} (${pct}%)</div>
+          <div style="height:6px;width:70px;background:var(--gray-100);border-radius:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${b.status==='Perlu Revisi' ? 'var(--red)' : b.status==='Disetujui' ? 'var(--green)' : 'var(--amber)'};"></div></div>
+        </td>
+        <td>${jvStatusChip(b.status)}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="jvOpenConfirm('branch','${b.name}')">Verifikasi Branch</button></td>
+      </tr>
+    `;
+    }).join('');
+  }
+
+  function jvRenderDirektoratTable(){
+    const body = document.getElementById('jv-direktorat-tbody');
+    if(!body) return;
+    body.innerHTML = jvDirektorats.map(d => {
+      const pct = Math.round((d.verified / d.total) * 100);
+      return `
+      <tr>
+        <td><a href="javascript:void(0)" onclick="jvFilterToDirektorat('${d.name}')" style="color:var(--gray-800);font-weight:600;text-decoration:none;">${d.name}</a></td>
+        <td>${d.total}</td>
+        <td>
+          <div style="font-size:11px;color:var(--gray-500);margin-bottom:3px;">${d.verified} (${pct}%)</div>
+          <div style="height:6px;width:70px;background:var(--gray-100);border-radius:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${d.status==='Perlu Revisi' ? 'var(--red)' : d.status==='Disetujui' ? 'var(--green)' : 'var(--amber)'};"></div></div>
+        </td>
+        <td>${jvStatusChip(d.status)}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="jvOpenConfirm('direktorat','${d.name}')">Verifikasi Direktorat</button></td>
+      </tr>
+    `;
+    }).join('');
+  }
+
+  function jvRenderDetailTable(){
+    const theadRow = document.getElementById('jv-thead-row');
+    const body = document.getElementById('jv-detail-tbody');
+    if(!theadRow || !body) return;
+    const nDays = jvDaysInMonth(jvState.y, jvState.m);
+
+    let headHtml = '<th>Nama Karyawan<br><span style="font-weight:500;text-transform:none;font-size:9.5px;">NPP • Branch • Role Title</span></th><th>Atasan Langsung</th>';
+    for(let d=1; d<=nDays; d++){
+      const dow = jvDow(jvState.y, jvState.m, d);
+      const isWeekend = dow === 0 || dow === 6;
+      const dowLbl = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][dow];
+      headHtml += `<th class="${isWeekend ? 'jv-weekend' : ''}">${d}<br>${dowLbl}</th>`;
+    }
+    headHtml += '<th>Total<br>Hari Kerja</th><th>Aksi</th>';
+    theadRow.innerHTML = headHtml;
+
+    const filtered = jvEmployees.filter(e =>
+      (!jvState.direktorat || e.direktorat === jvState.direktorat) &&
+      (!jvState.branch || e.branch === jvState.branch)
+    );
+
+    if(filtered.length === 0){
+      body.innerHTML = `<tr><td colspan="${nDays + 4}"><div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><div class="es-title">Tidak ada karyawan ditemukan</div><div class="es-desc">Coba ubah filter Direktorat atau Branch.</div></div></td></tr>`;
+      return;
+    }
+
+    body.innerHTML = filtered.map((e, idx) => {
+      const days = e.pattern.slice(0, nDays);
+      const totalKerja = days.filter(c => c !== 'OFF').length;
+      return `
+      <tr>
+        <td>
+          <div class="emp-cell">
+            <div class="avatar">${initials(e.name)}</div>
+            <div>
+              <div class="e-name">${e.name}</div>
+              <div class="e-sub">${e.npp} • ${e.branch} • ${e.role}</div>
+            </div>
+          </div>
+          <div style="margin-top:5px;">${jvStatusChip(e.status)}</div>
+        </td>
+        <td><div style="font-weight:600;color:var(--gray-800);">${e.atasan}</div><div class="muted" style="font-size:11px;">${e.atasanRole}</div></td>
+        ${days.map(c => '<td>' + jvCodeBadge(c) + '</td>').join('')}
+        <td class="jv-total">${totalKerja}</td>
+        <td>
+          <div style="display:flex;gap:5px;">
+            <button class="icon-btn" style="width:28px;height:28px;" title="Setujui" onclick="jvApproveEmployee('${e.name}')"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></button>
+            <button class="icon-btn" style="width:28px;height:28px;" title="Tandai Perlu Revisi" onclick="jvOpenRevision('${e.name}')"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 16.5h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></button>
+          </div>
+        </td>
+      </tr>
+    `;
+    }).join('');
+  }
+
+  let jvPendingBulk = null;
+  function jvOpenConfirm(kind, name){
+    const list = kind === 'branch' ? jvBranches : jvDirektorats;
+    const item = list.find(x => x.name === name);
+    if(!item) return;
+    const affected = jvEmployees.filter(e => kind === 'branch' ? e.branch === name : e.direktorat === name);
+    const remaining = item.total - item.verified;
+    jvPendingBulk = {kind, name};
+    document.getElementById('jv-confirm-title').textContent = 'Konfirmasi Verifikasi ' + (kind === 'branch' ? 'Branch' : 'Direktorat');
+    document.getElementById('jv-confirm-body').innerHTML = `
+      <p style="margin:0 0 14px;font-size:13.5px;color:var(--gray-700);">
+        Anda akan menyetujui jadwal kerja <b>${remaining}</b> dari <b>${item.total}</b> karyawan di ${kind === 'branch' ? 'branch' : 'direktorat'} <b>${name}</b> sekaligus. Seluruh jadwal yang belum diverifikasi akan berubah status menjadi <b>Disetujui</b>.
+      </p>
+      ${affected.length ? `<div class="section-label">Contoh karyawan terdampak</div><div style="display:flex;flex-direction:column;gap:6px;">${affected.slice(0,5).map(e => `<div style="display:flex;justify-content:space-between;font-size:12.5px;"><span>${e.name}</span>${jvStatusChip(e.status)}</div>`).join('')}${affected.length > 5 ? `<div class="muted" style="font-size:11.5px;">+${affected.length - 5} karyawan lainnya</div>` : ''}</div>` : ''}
+    `;
+    document.getElementById('jv-confirm-overlay').classList.add('show');
+  }
+  function jvCloseConfirm(){
+    document.getElementById('jv-confirm-overlay').classList.remove('show');
+    jvPendingBulk = null;
+  }
+  function jvConfirmBulk(){
+    if(!jvPendingBulk) return;
+    const {kind, name} = jvPendingBulk;
+    const list = kind === 'branch' ? jvBranches : jvDirektorats;
+    const item = list.find(x => x.name === name);
+    item.verified = item.total;
+    item.status = 'Disetujui';
+    jvEmployees.forEach(e => { if((kind === 'branch' ? e.branch : e.direktorat) === name) e.status = 'Disetujui'; });
+    jvCloseConfirm();
+    jvRenderBranchTable();
+    jvRenderDirektoratTable();
+    jvRenderDetailTable();
+    showToast('Verifikasi ' + (kind === 'branch' ? 'branch' : 'direktorat') + ' ' + name + ' berhasil — seluruh jadwal disetujui.');
+  }
+
+  let jvPendingEmployee = null;
+  function jvApproveEmployee(name){
+    const e = jvEmployees.find(x => x.name === name);
+    if(!e) return;
+    e.status = 'Disetujui';
+    jvRenderDetailTable();
+    showToast('Jadwal ' + name + ' disetujui.');
+  }
+  function jvOpenRevision(name){
+    jvPendingEmployee = name;
+    document.getElementById('jv-revision-emp').textContent = name;
+    document.getElementById('jv-revision-note').value = '';
+    document.getElementById('jv-revision-overlay').classList.add('show');
+  }
+  function jvCloseRevision(){
+    document.getElementById('jv-revision-overlay').classList.remove('show');
+    jvPendingEmployee = null;
+  }
+  function jvSubmitRevision(){
+    if(!jvPendingEmployee) return;
+    const e = jvEmployees.find(x => x.name === jvPendingEmployee);
+    if(e) e.status = 'Revisi';
+    const name = jvPendingEmployee;
+    jvCloseRevision();
+    jvRenderDetailTable();
+    showToast('Jadwal ' + name + ' ditandai perlu revisi.');
+  }
+
+  jvPopulateFilters();
+  jvRenderPeriodLabel();
+  jvRenderBranchTable();
+  jvRenderDirektoratTable();
+  jvRenderDetailTable();
+
+  // ===== Shift Assignment =====
+  const shiftAssignData = [
+    {name:'Ahmad Fauzi', branch:'Malang Raya', shift:'Shift Pagi', pattern:'5-2 Standar', rotasi:'—'},
+    {name:'Dewi Kusuma', branch:'Kediri Raya', shift:'Shift Siang', pattern:'6-1 Cabang', rotasi:'Rotasi 3 Shift Mingguan'},
+    {name:'Rizky Pratama', branch:'Blitar Raya', shift:'Shift Malam', pattern:'6-1 Cabang', rotasi:'Rotasi 3 Shift Mingguan'},
+    {name:'Sinta Aulia', branch:'Tulungagung Raya', shift:'Shift Pagi', pattern:'5-2 Standar', rotasi:'—'},
+    {name:'Fajar Maulana', branch:'Kantor Pusat', shift:'Shift Kantor Pusat', pattern:'5-2 Standar', rotasi:'—'}
+  ];
+  function renderShiftAssignTable(){
+    const body = document.getElementById('shift-assignment-tbody');
+    if(!body) return;
+    body.innerHTML = shiftAssignData.map(s => `
+      <tr>
+        <td><div class="emp-cell"><div class="avatar">${initials(s.name)}</div><div class="e-name">${s.name}</div></div></td>
+        <td>${s.branch}</td>
+        <td><span class="chip chip-blue">${s.shift}</span></td>
+        <td>${s.pattern}</td>
+        <td class="muted">${s.rotasi}</td>
+        <td><button class="btn btn-outline btn-sm perm-manage">Ubah</button></td>
+      </tr>
+    `).join('');
+  }
+  renderShiftAssignTable();
+
+  // ===== Monitoring: Live Feed =====
+  const liveFeedData = [
+    {name:'Ahmad Fauzi', action:'Check-in', time:'08:02:14', device:'FP-MLG-01'},
+    {name:'Nanda Putri', action:'Check-in', time:'08:03:01', device:'FACE-HO-02'},
+    {name:'Sinta Aulia', action:'Check-in', time:'08:07:19', device:'MOBILE-GPS'},
+    {name:'Budi Santoso', action:'Check-out', time:'08:08:40', device:'FACE-HO-01'},
+    {name:'Dewi Kusuma', action:'Check-in', time:'08:14:52', device:'MOBILE-GPS'}
+  ];
+  function renderLiveFeed(){
+    const el = document.getElementById('live-feed');
+    if(!el) return;
+    el.innerHTML = liveFeedData.map(f => `
+      <div class="live-feed-row">
+        <span class="live-dot"></span>
+        <div class="avatar" style="width:28px;height:28px;font-size:10px;">${initials(f.name)}</div>
+        <div style="flex:1;"><b style="color:var(--gray-900);">${f.name}</b> — ${f.action}</div>
+        <span class="mono muted">${f.time}</span>
+        <span class="muted" style="width:100px;text-align:right;">${f.device}</span>
+      </div>
+    `).join('');
+  }
+  renderLiveFeed();
+
+  // ===== Monitoring: Device Status =====
+  const deviceData = [
+    {name:'FP-MLG-01', loc:'Malang Raya — Lobi Utama', status:'online'},
+    {name:'FACE-HO-01', loc:'Kantor Pusat — Pintu Masuk', status:'online'},
+    {name:'FACE-HO-02', loc:'Kantor Pusat — Lantai 2', status:'online'},
+    {name:'FP-KDR-01', loc:'Kediri Raya — Lobi', status:'offline'},
+    {name:'FP-BLT-01', loc:'Blitar Raya — Lobi', status:'online'},
+    {name:'FP-TLG-01', loc:'Tulungagung Raya — Lobi', status:'offline'}
+  ];
+  function renderDeviceList(){
+    const el = document.getElementById('device-list');
+    if(!el) return;
+    el.innerHTML = deviceData.map(d => `
+      <div class="device-row">
+        <span class="device-dot ${d.status}"></span>
+        <div style="flex:1;"><div class="device-name">${d.name}</div><div class="device-loc">${d.loc}</div></div>
+        <span class="chip ${d.status === 'online' ? 'chip-green' : 'chip-red'}">${d.status === 'online' ? 'Online' : 'Offline'}</span>
+      </div>
+    `).join('');
+  }
+  renderDeviceList();
+
+  // Deep-link support: attendance-schedule.html#kehadiran etc.
+  (function(){
+    const key = location.hash.replace('#','');
+    if(pageLabels[key]){
+      const navEl = document.querySelector('.menu-item[data-page="' + key + '"]');
+      if(navEl) goPage(key, navEl);
+    }
+  })();
+  applyPermissions();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data-layer.js"></script>
+<script src="auth-guard.js"></script>
+<script src="rbac-guard.js"></script>
+<script src="sidebar-toggle.js"></script>
+<script src="sidebar-badges.js"></script>
+</body>
+</html>

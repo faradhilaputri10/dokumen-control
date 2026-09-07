@@ -1,0 +1,2796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dasaria HRIS — Dokumen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#2563EB;
+    --primary-dark:#1D4ED8;
+    --primary-light:#EFF6FF;
+    --primary-100:#DBEAFE;
+    --gray-50:#F8FAFC;
+    --gray-100:#F1F5F9;
+    --gray-200:#E2E8F0;
+    --gray-300:#CBD5E1;
+    --gray-400:#94A3B8;
+    --gray-500:#64748B;
+    --gray-600:#475569;
+    --gray-700:#334155;
+    --gray-800:#1E293B;
+    --gray-900:#0F172A;
+    --green:#16A34A; --green-bg:#DCFCE7;
+    --amber:#D97706; --amber-bg:#FEF3C7;
+    --red:#DC2626; --red-bg:#FEE2E2;
+    --purple:#7C3AED; --purple-bg:#EDE9FE;
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+    --shadow-md:0 4px 12px rgba(15,23,42,.08);
+    --shadow-lg:0 12px 32px rgba(15,23,42,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:14px;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .app{display:flex;min-height:100vh;}
+
+  /* ===== SIDEBAR (shared across all HC modules — see dashboard-hc.html) ===== */
+  .sidebar{width:260px;background:#fff;border-right:1px solid var(--gray-200);flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;font-family:'Outfit','Segoe UI',Arial,sans-serif;}
+  .brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;}
+  .brand .logo{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .brand .name{font-size:19px;font-weight:800;color:#101828;letter-spacing:-.3px;}
+  .menu-label{font-size:12px;font-weight:700;padding:4px 20px 8px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;}
+  .menu-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:2px 12px;border-radius:8px;cursor:pointer;color:#1f2937;text-decoration:none;font-size:14px;}
+  .menu-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
+  .menu-item .chev{margin-left:auto;width:14px;height:14px;transition:transform .15s;}
+  .menu-item.open .chev{transform:rotate(180deg);}
+  .menu-item:hover{background:#f7f8fa;}
+  .menu-item.active-parent{color:#465fff;font-weight:600;background:#ecf3ff;}
+  .submenu{padding-left:14px;}
+  .submenu .menu-item{padding:7px 12px 7px 34px;font-size:13.5px;margin:1px 12px;}
+  .submenu .menu-item.active{color:#465fff;font-weight:600;background:#ecf3ff;}
+  .submenu-label{font-size:10.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.4px;padding:10px 12px 4px 34px;}
+  .sidebar-foot{margin-top:auto;padding:16px 20px;border-top:1px solid var(--gray-200);font-family:'Inter','Segoe UI',Arial,sans-serif;}
+  .sidebar-user{display:flex;align-items:center;gap:10px;}
+  .sidebar-user .avatar{width:34px;height:34px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;}
+  .sidebar-user .u-name{font-size:12.5px;font-weight:700;color:var(--gray-800);}
+  .sidebar-user .u-role{font-size:11px;color:var(--gray-500);}
+
+  /* ===== MAIN / TOPBAR ===== */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{min-height:64px;background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:60;}
+  .topbar-search{display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:8px 12px;min-width:260px;color:var(--gray-400);}
+  .topbar-search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;width:100%;color:var(--gray-800);}
+  .topbar-search svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
+  .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--gray-200);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-600);flex-shrink:0;position:relative;}
+  .icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;}
+  .icon-btn:hover{background:var(--gray-50);}
+  .icon-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .icon-btn:disabled:hover{background:#fff;}
+  .icon-btn .dot{position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+  .topbar-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px 4px 4px;border-radius:20px;}
+  .topbar-user:hover{background:var(--gray-50);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-100);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+
+  .loading-bar{position:fixed;top:0;left:0;height:2.5px;background:var(--primary);width:0;z-index:300;opacity:0;transition:width .28s ease, opacity .15s ease;}
+  .loading-bar.show{opacity:1;}
+  .breadcrumb-trail{font-size:12.5px;color:var(--gray-500);margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .breadcrumb-trail b{color:var(--gray-800);font-weight:600;}
+
+  .empty-state{text-align:center;padding:56px 20px;color:var(--gray-400);}
+  .empty-state svg{width:40px;height:40px;stroke:var(--gray-300);fill:none;stroke-width:1.5;margin-bottom:12px;}
+  .empty-state .es-title{font-size:13.5px;font-weight:700;color:var(--gray-600);margin-bottom:4px;}
+  .empty-state .es-desc{font-size:12.5px;color:var(--gray-400);}
+
+  .content{padding:24px;flex:1;position:relative;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+  .page-head h1{font-size:20px;font-weight:800;margin:0 0 4px;color:var(--gray-900);letter-spacing:-.2px;}
+  .page-head .sub{font-size:13px;color:var(--gray-500);}
+
+  .grid-12{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+  .col-3{grid-column:span 3;} .col-4{grid-column:span 4;} .col-5{grid-column:span 5;}
+  .col-6{grid-column:span 6;} .col-7{grid-column:span 7;} .col-8{grid-column:span 8;}
+  .col-9{grid-column:span 9;} .col-12{grid-column:span 12;}
+  @media (max-width:1300px){ .col-3,.col-4{grid-column:span 6;} .col-8,.col-9,.col-7,.col-5{grid-column:span 12;} }
+
+  .card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);}
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .card-head h2{font-size:14.5px;font-weight:700;margin:0;color:var(--gray-900);}
+  .card-head .sub{font-size:12px;color:var(--gray-500);margin-top:2px;}
+
+  .kpi-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm);cursor:default;}
+  .kpi-card .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .kpi-icon svg{width:18px;height:18px;stroke-width:1.9;fill:none;}
+  .kpi-card .lbl{font-size:12.5px;color:var(--gray-500);font-weight:600;margin-bottom:6px;}
+  .kpi-card .val{font-size:26px;font-weight:800;color:var(--gray-900);line-height:1;}
+  .kpi-delta{font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-top:8px;}
+  .kpi-delta.up{color:var(--green);} .kpi-delta.down{color:var(--red);} .kpi-delta.flat{color:var(--gray-400);}
+  .kpi-delta svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:3;}
+
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap;}
+  .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;flex-shrink:0;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-outline{background:#fff;border:1px solid var(--gray-300);color:var(--gray-700);}
+  .btn-outline:hover{background:var(--gray-50);}
+  .btn-ghost{background:transparent;color:var(--gray-600);}
+  .btn-ghost:hover{background:var(--gray-100);}
+  .btn-danger{background:var(--red);color:#fff;}
+  .btn-danger:hover{background:#B91C1C;}
+  .btn-success{background:var(--green);color:#fff;}
+  .btn-success:hover{background:#15803D;}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .chip i{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .chip-green{background:var(--green-bg);color:#166534;} .chip-green i{background:var(--green);}
+  .chip-amber{background:var(--amber-bg);color:#92400E;} .chip-amber i{background:var(--amber);}
+  .chip-red{background:var(--red-bg);color:#991B1B;} .chip-red i{background:var(--red);}
+  .chip-blue{background:var(--primary-100);color:var(--primary-dark);} .chip-blue i{background:var(--primary);}
+  .chip-purple{background:var(--purple-bg);color:#5B21B6;} .chip-purple i{background:var(--purple);}
+  .chip-gray{background:var(--gray-100);color:var(--gray-600);} .chip-gray i{background:var(--gray-400);}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{background:var(--gray-50);color:var(--gray-500);text-align:left;padding:11px 14px;font-weight:700;white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--gray-200);}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;color:var(--gray-700);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--gray-50);}
+  .muted{color:var(--gray-500);}
+  .mono{font-family:'SF Mono',Consolas,monospace;font-size:12.5px;}
+  .req-subject{font-weight:600;color:var(--gray-900);}
+
+  .form-field label{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px;}
+  .form-field select, .form-field input[type=text], .form-field input[type=number], .form-field input[type=date], .form-field textarea{width:100%;border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;font-family:inherit;color:var(--gray-800);background:#fff;}
+  .form-field select:focus, .form-field input:focus, .form-field textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .form-field textarea{resize:vertical;min-height:80px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gray-900);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .section-label{font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin:0 0 12px;}
+  .toolbar-card{padding:14px 16px;}
+  .toolbar-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .toolbar-row .form-field{min-width:150px;flex:1;}
+  .toolbar-row select, .toolbar-row input{padding:8px 11px;font-size:12.5px;}
+
+  .tabbar{display:flex;background:var(--gray-100);border-radius:10px;padding:4px;gap:4px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{flex:1;text-align:center;padding:9px 14px;border-radius:7px;font-weight:600;cursor:pointer;color:var(--gray-600);white-space:nowrap;font-size:12.5px;}
+  .tabbar-fit{flex-wrap:nowrap;overflow-x:auto;}
+  .tabbar-fit .tab{flex:0 0 auto;}
+  .tab.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);}
+  .tab .n{margin-left:6px;background:var(--gray-200);color:var(--gray-600);border-radius:20px;padding:1px 7px;font-size:10.5px;}
+  .tab.active .n{background:var(--primary-100);color:var(--primary-dark);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .drawer-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;z-index:150;}
+  .drawer-overlay.show{display:block;}
+  .drawer{position:fixed;top:0;right:-480px;width:480px;max-width:92vw;height:100vh;background:#fff;box-shadow:var(--shadow-lg);z-index:151;transition:right .22s ease;display:flex;flex-direction:column;}
+  .drawer.show{right:0;}
+  .drawer-wide-560{width:560px;right:-560px;}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--gray-200);}
+  .drawer-head h2{font-size:16px;font-weight:800;margin:0;}
+  .drawer-body{padding:22px;overflow-y:auto;flex:1;}
+  .drawer-foot{padding:16px 22px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:10px;}
+  .modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--gray-100);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-500);}
+  .modal-close svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.2;}
+
+  .pagination{display:flex;align-items:center;justify-content:space-between;padding-top:16px;font-size:12.5px;color:var(--gray-500);flex-wrap:wrap;gap:10px;}
+  .pg-btns{display:flex;align-items:center;gap:6px;}
+  .pg-btn{width:28px;height:28px;border:1px solid var(--gray-200);border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-500);font-size:12px;}
+  .pg-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700;}
+
+  /* ===== DOCUMENT-SPECIFIC ===== */
+  .doc-icon{width:38px;height:38px;border-radius:10px;background:var(--primary-light);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .doc-icon svg{width:18px;height:18px;stroke-width:1.8;fill:none;}
+  .doc-cell{display:flex;align-items:center;gap:10px;}
+  .doc-cell .d-name{font-weight:600;color:var(--gray-900);font-size:13px;}
+  .doc-cell .d-sub{font-size:11px;color:var(--gray-500);}
+
+  .repo-layout{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start;}
+  .folder-tree{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:12px;}
+  .folder-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--gray-600);}
+  .folder-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0;}
+  .folder-item:hover{background:var(--gray-50);}
+  .folder-item.active{background:var(--primary-light);color:var(--primary);}
+  .folder-item.sub{padding-left:28px;font-weight:500;}
+  .file-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .file-card{border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px 14px;text-align:center;cursor:pointer;background:#fff;}
+  .file-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);}
+  .file-card .f-icon{width:40px;height:40px;margin:0 auto 10px;color:var(--gray-300);}
+  .file-card .f-icon svg{width:100%;height:100%;stroke-width:1.3;fill:none;}
+  .file-card .f-name{font-size:12px;font-weight:600;color:var(--gray-800);word-break:break-word;}
+  .file-card .f-meta{font-size:10.5px;color:var(--gray-400);margin-top:3px;}
+  @media (max-width:1300px){ .repo-layout{grid-template-columns:1fr;} .file-grid{grid-template-columns:repeat(2,1fr);} }
+
+  /* ===== WIZARD (Buat Dokumen) ===== */
+  .wizard-steps{display:flex;gap:0;margin-bottom:22px;border-bottom:1px solid var(--gray-200);padding-bottom:18px;overflow-x:auto;}
+  .wz-step{flex:1;min-width:120px;display:flex;align-items:center;gap:8px;padding-bottom:14px;border-bottom:2px solid var(--gray-200);margin-bottom:-19px;}
+  .wz-step .num{width:24px;height:24px;border-radius:50%;background:var(--gray-200);color:var(--gray-500);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .wz-step.done{border-color:var(--primary);} .wz-step.done .num{background:var(--primary);color:#fff;}
+  .wz-step.active{border-color:var(--primary);} .wz-step.active .num{background:var(--primary);color:#fff;}
+  .wz-step .lbl{line-height:1.25;} .wz-step .lbl .k{display:block;font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.3px;} .wz-step .lbl .t{font-size:12px;font-weight:700;color:var(--gray-800);}
+  .wz-panel{display:none;} .wz-panel.active{display:block;}
+  .wz-check-row{display:flex;align-items:center;gap:10px;border:1px solid var(--gray-200);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .wz-check-row.disabled{opacity:.5;}
+  .wz-check-row input{width:16px;height:16px;flex-shrink:0;}
+  .wz-check-row .t{font-weight:700;font-size:13px;color:var(--gray-900);}
+  .wz-check-row .s{font-size:11.5px;color:var(--gray-500);}
+  .wz-summary-row{display:flex;justify-content:space-between;border-bottom:1px dashed var(--gray-200);padding:9px 0;font-size:13px;}
+  .wz-summary-row b{color:var(--gray-900);}
+  .wz-footer{display:flex;justify-content:space-between;margin-top:20px;border-top:1px solid var(--gray-200);padding-top:16px;}
+  .alur-card{border:2px solid var(--gray-200);border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer;}
+  .alur-card.selected{border-color:var(--primary);background:var(--primary-light);}
+  .alur-card .t{font-weight:700;font-size:13.5px;color:var(--gray-900);margin-bottom:3px;}
+  .alur-card .s{font-size:12px;color:var(--gray-600);}
+  .recipient-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .recipient-row input{flex:1;}
+
+  /* ===== SPLIT LIST/DETAIL ===== */
+  .split-list{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;max-height:calc(100vh - 260px);display:flex;flex-direction:column;}
+  .split-list-head{padding:14px 16px;border-bottom:1px solid var(--gray-200);}
+  .split-list-items{overflow-y:auto;flex:1;}
+  .split-item{padding:14px 16px;border-bottom:1px solid var(--gray-100);cursor:pointer;display:flex;gap:10px;}
+  .split-item:hover{background:var(--gray-50);}
+  .split-item.active{background:var(--primary-light);border-left:3px solid var(--primary);}
+  #rr-list tbody tr.active{background:var(--primary-light);box-shadow:inset 3px 0 0 var(--primary);}
+  .split-item .si-check{margin-top:2px;}
+  .split-item .si-body{flex:1;min-width:0;}
+  .split-item .si-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;}
+  .split-item .si-num{font-size:11px;font-weight:700;color:var(--primary);}
+  .split-item .si-subject{font-size:13px;font-weight:600;color:var(--gray-900);margin-bottom:3px;}
+  .split-item .si-meta{font-size:11.5px;color:var(--gray-500);}
+  .detail-section{margin-bottom:22px;}
+  .detail-section:last-child{margin-bottom:0;}
+  .detail-section h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-400);margin:0 0 12px;}
+  .detail-kv{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .detail-kv .k{font-size:11.5px;color:var(--gray-500);margin-bottom:2px;}
+  .detail-kv .v{font-size:13px;font-weight:600;color:var(--gray-800);}
+  .detail-kv .v.locked{color:var(--gray-400);font-weight:600;display:flex;align-items:center;gap:5px;}
+  .detail-kv .v.locked svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2;}
+  .emp-profile{display:flex;align-items:center;gap:12px;}
+  .emp-profile .avatar{width:46px;height:46px;font-size:15px;}
+  .emp-profile .e-name{font-size:14px;font-weight:700;color:var(--gray-900);}
+  .emp-profile .e-role{font-size:12px;color:var(--gray-500);}
+  .crc-lock-banner{display:flex;gap:10px;align-items:flex-start;background:var(--gray-50);border:1px dashed var(--gray-300);color:var(--gray-500);border-radius:10px;padding:10px 12px;font-size:11.5px;margin-bottom:14px;}
+  .crc-lock-banner svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;margin-top:1px;}
+
+  /* ===== APPROVAL TIMELINE ===== */
+  .approval-tl{position:relative;padding-left:28px;}
+  .approval-tl-group{position:relative;}
+  .approval-tl-item{position:relative;padding-bottom:20px;}
+  .approval-tl-item:last-child{padding-bottom:0;}
+  .approval-tl-item::before{content:'';position:absolute;left:-22px;top:22px;bottom:-2px;width:2px;background:var(--gray-200);}
+  .approval-tl-item:last-child::before{display:none;}
+  .approval-tl-item.done::before{background:var(--green);}
+  .approval-tl-dot{position:absolute;left:-30px;top:0;width:16px;height:16px;border-radius:50%;background:var(--gray-200);display:flex;align-items:center;justify-content:center;}
+  .approval-tl-item.done .approval-tl-dot{background:var(--green);}
+  .approval-tl-item.current .approval-tl-dot{background:var(--primary);box-shadow:0 0 0 3px var(--primary-100);}
+  .approval-tl-item.cancel .approval-tl-dot{background:var(--red);}
+  .approval-tl-item.pending .approval-tl-dot{background:var(--gray-200);}
+  .approval-tl-dot svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3;}
+  .approval-tl-item .tl-stage{font-size:12.5px;font-weight:700;color:var(--gray-900);}
+  .approval-tl-item.pending .tl-stage{color:var(--gray-400);}
+  .approval-tl-item .tl-meta{font-size:11.5px;color:var(--gray-500);margin-top:2px;}
+  .approval-tl-item .tl-note{font-size:12px;color:var(--gray-600);margin-top:6px;background:var(--gray-50);padding:8px 10px;border-radius:8px;}
+  .approval-tl-item .tl-parallel-tag{display:inline-block;font-size:10px;font-weight:700;color:var(--purple);background:var(--purple-bg);border-radius:20px;padding:1px 8px;margin-left:6px;}
+  .status-ringkas{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:5px;}
+  .status-ringkas.complete{background:var(--green-bg);color:#166534;}
+  .status-ringkas.cancel{background:var(--red-bg);color:#991B1B;}
+  .status-ringkas.kandidat{background:var(--amber-bg);color:#92400E;}
+  .status-ringkas.hc{background:var(--amber-bg);color:#92400E;}
+  .status-ringkas.review{background:var(--primary-100);color:var(--primary-dark);}
+
+  /* ===== MASTER TEMPLATE ===== */
+  .mt-layout{display:flex;align-items:stretch;gap:16px;min-height:calc(100vh - 230px);}
+  @media (max-width:1100px){ .mt-layout{flex-direction:column;min-height:0;} .mt-pane-group{flex-direction:column;} .mt-pane-kategori, .mt-pane-jenis{width:100% !important;border-right:none;border-bottom:1px solid var(--gray-200);} .mt-resize-handle{display:none;} }
+  .mt-pane-group{display:flex;border:1px solid var(--gray-200);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-sm);}
+  .mt-pane{position:relative;overflow-y:auto;padding:16px;}
+  .mt-pane-kategori{width:220px;flex-shrink:0;border-right:1px solid var(--gray-200);}
+  .mt-pane-jenis{width:260px;flex-shrink:0;}
+  .mt-pane-detail{flex:1;min-width:280px;overflow-y:auto;}
+  .mt-resize-handle{position:absolute;top:0;right:-5px;bottom:0;width:10px;cursor:col-resize;z-index:5;}
+  .mt-resize-handle::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:3px;height:36px;border-radius:3px;background:transparent;transition:background .1s;}
+  .mt-resize-handle:hover::after, .mt-resize-handle.dragging::after{background:var(--primary-100);}
+  .mt-col-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .mt-col-head h2{font-size:13px;font-weight:700;margin:0;color:var(--gray-900);}
+  .mt-col-actions{display:flex;gap:4px;}
+  .mt-icon-btn{width:26px;height:26px;border-radius:6px;border:none;background:transparent;color:var(--gray-400);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .mt-icon-btn:hover{background:var(--gray-100);color:var(--gray-700);}
+  .mt-icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;}
+  .mt-kategori-item{display:flex;justify-content:space-between;align-items:center;padding:9px 8px;border-radius:8px;cursor:pointer;margin-bottom:2px;}
+  .mt-kategori-item:hover{background:var(--gray-50);}
+  .mt-kategori-item.active{background:var(--primary-light);}
+  .mt-kategori-item .t{font-size:12.5px;font-weight:700;color:var(--gray-800);}
+  .mt-kategori-item.active .t{color:var(--primary);}
+  .mt-kategori-item .s{font-size:10.5px;color:var(--gray-400);margin-top:1px;}
+  .mt-kategori-item .row-actions{display:none;gap:2px;}
+  .mt-kategori-item:hover .row-actions{display:flex;}
+  .mt-jenis-item{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;}
+  .mt-jenis-item:hover{background:var(--gray-50);}
+  .mt-jenis-item.active{background:var(--primary-light);}
+  .mt-jenis-item .t{font-size:12.5px;font-weight:700;color:var(--gray-800);}
+  .mt-jenis-item.active .t{color:var(--primary);}
+  .mt-jenis-item .s{font-size:10.5px;color:var(--gray-400);margin-top:1px;font-family:'SF Mono',Consolas,monospace;}
+  .mt-detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+  .mt-detail-head .crumb{font-size:11.5px;color:var(--gray-400);margin-bottom:2px;}
+  .mt-detail-head h1{font-size:19px;font-weight:800;margin:0;color:var(--gray-900);}
+  .mt-link-danger{font-size:12px;font-weight:700;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;}
+  .mt-link{font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;background:none;border:none;font-family:inherit;}
+  .mt-org-box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;margin-bottom:18px;}
+  .mt-org-box .lbl{font-size:10.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.4px;}
+  .mt-org-box .chain{font-size:13px;font-weight:600;color:var(--gray-900);margin:6px 0 4px;}
+  .mt-org-box .desc{font-size:11.5px;color:var(--gray-500);}
+  .mt-empty{padding:60px 20px;text-align:center;color:var(--gray-400);}
+  .mt-field-row{margin-bottom:16px;}
+  .mt-field-row label{display:block;font-size:10.5px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
+  .mt-field-row .hint{font-size:11px;color:var(--gray-400);margin-top:5px;}
+  .mt-field-row input, .mt-field-row select, .mt-field-row textarea{width:100%;box-sizing:border-box;border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;font-family:inherit;color:var(--gray-800);background:#fff;}
+  .mt-field-row textarea{resize:vertical;min-height:70px;}
+  .mt-field-row input:focus, .mt-field-row select:focus, .mt-field-row textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .mt-field-row input[disabled], .mt-field-row select[disabled], .mt-field-row textarea[disabled]{background:var(--gray-50);color:var(--gray-500);}
+  .mt-id-copy{display:flex;gap:8px;}
+  .mt-id-copy input{flex:1;}
+
+  .mt-flow-preview{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--primary-light);border:1px solid var(--primary-100);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12.5px;font-weight:700;color:var(--primary-dark);}
+  .mt-approval-row{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--gray-200);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .mt-approval-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;flex-shrink:0;}
+  .mt-approval-row .t{font-weight:700;font-size:13px;color:var(--gray-900);}
+  .mt-approval-row .s{font-size:11.5px;color:var(--gray-500);margin-top:1px;}
+  .mt-approval-row .sub{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+  .mt-approval-radio{display:flex;gap:16px;font-size:12.5px;}
+  .mt-approval-radio label{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--gray-700);}
+  .mt-layer-row{align-items:flex-start;}
+  .mt-layer-order{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .mt-layer-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  @media (max-width:760px){ .mt-layer-grid{grid-template-columns:1fr;} }
+  .mt-layer-toggles{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:600;color:var(--gray-700);margin-top:10px;}
+  .mt-layer-toggles label{display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .mt-layer-actions{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+  .mt-sig-columns{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start;}
+  @media (max-width:820px){ .mt-sig-columns{grid-template-columns:1fr;} }
+  .mt-sig-col-title{font-size:11.5px;font-weight:800;color:var(--gray-500);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+  .mt-sig-chip{border:1px solid var(--gray-200);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fff;cursor:grab;}
+  .mt-sig-chip[draggable="true"]:active{cursor:grabbing;}
+  .mt-sig-chip.placed{background:var(--green-bg,#DCFCE7);border-color:#B4E5C4;cursor:default;}
+  .mt-sig-chip.orphan{background:var(--red-bg,#FEE2E2);border-color:#FCA5A5;}
+  .mt-sig-chip-title{font-weight:700;font-size:12.5px;color:var(--gray-900);}
+  .mt-sig-chip-opts{display:flex;gap:12px;font-size:11.5px;margin-top:6px;}
+  .mt-sig-chip-opts label{display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:600;color:var(--gray-700);}
+  .mt-sig-chip-ext{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gray-500);margin-top:6px;cursor:pointer;}
+  .mt-sig-chip-hint{font-size:11px;color:var(--gray-400);margin-top:8px;font-style:italic;}
+  .mt-sig-chip-badge{font-size:11.5px;font-weight:700;color:#16A34A;margin-top:8px;}
+  .mt-sig-chip-marker{font-size:11px;color:var(--gray-600);margin-top:2px;word-break:break-all;}
+  .mt-sig-col-doc{border:1px solid var(--gray-200);border-radius:10px;padding:14px;background:var(--gray-50);}
+  .mt-sig-scan-meta{font-size:11px;color:var(--gray-400);margin-bottom:8px;}
+  .mt-sig-paragraphs{max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+  .mt-sig-para-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px dashed var(--gray-300);border-radius:8px;padding:8px 10px;font-size:12px;}
+  .mt-sig-para-row.empty{border-style:dashed;color:var(--gray-400);font-style:italic;}
+  .mt-sig-para-idx{flex-shrink:0;font-family:monospace;color:var(--gray-400);font-size:11px;}
+  .mt-sig-para-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mt-sig-para-marker{flex-shrink:0;font-size:10.5px;color:var(--primary-dark);background:var(--primary-light);border-radius:6px;padding:2px 6px;}
+  .ph-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:12.5px;}
+  .ph-row:last-child{border-bottom:none;}
+  .ph-row .field{font-family:'SF Mono',Consolas,monospace;color:var(--primary-dark);}
+  .ph-row .section{font-size:10.5px;color:var(--gray-400);text-transform:uppercase;}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+          <circle cx="13" cy="13" r="12" fill="#10b981"/>
+          <circle cx="25" cy="13" r="12" fill="#3b82f6" opacity="0.85"/>
+          <circle cx="13" cy="25" r="12" fill="#f97316" opacity="0.85"/>
+          <circle cx="25" cy="25" r="12" fill="#8b5cf6" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="name">Dasaria</div>
+    </div>
+    <div class="menu-label">Menu</div>
+    <a class="menu-item" href="dashboard-hc.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a class="menu-item" href="dashboard-hc.html#struktur">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><path d="M12 7.2V12M12 12L5 16.8M12 12l7 4.8"/></svg>
+      Struktur dan Organisasi
+    </a>
+    <div class="menu-item" onclick="toggleSubmenu('sub-master', this)">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+      Data Master Karyawan
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-master" style="display:none">
+      <a class="menu-item" href="data-karyawan.html#datakaryawan">Data Karyawan</a>
+      <a class="menu-item" href="data-karyawan.html#perpanjangankontrak">Perpanjangan Kontrak</a>
+      <a class="menu-item" href="data-karyawan.html#pengundurandiri">Pengunduran Diri</a>
+      <a class="menu-item" href="data-karyawan.html#perubahanorganisasi">Perubahan Organisasi</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-penggajian', this)">
+      <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2.2"/><path d="M2.5 10h19"/><circle cx="17" cy="14.3" r="1.4"/></svg>
+      Penggajian
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-penggajian" style="display:none">
+      <a class="menu-item" data-key="camd" href="arsitektur-kompensasi.html">Arsitektur Kompensasi</a>
+      <a class="menu-item" data-key="konfigurasi" href="konfigurasi-penggajian.html">Payroll Configuration</a>
+      <a class="menu-item" data-key="pph2126" href="pph21-pph26-setting.html">PPh21 &amp; 26 Setting</a>
+      <a class="menu-item" data-key="payroll-dashboard" href="dashboard-hc.html#payroll-dashboard">Dashboard Penggajian</a>
+      <a class="menu-item" data-key="payroll-karyawan" href="payroll-karyawan-detail.html">Data Payroll Karyawan</a>
+      <a class="menu-item" data-key="periode" href="dashboard-hc.html#periode">Periode Gajian</a>
+      <a class="menu-item" data-key="validasi" href="dashboard-hc.html#validasi">Persetujuan Periode Gajian</a>
+      <a class="menu-item" data-key="distribusi" href="dashboard-hc.html#distribusi">Distribusi Gaji &amp; Slip Gaji</a>
+      <a class="menu-item" data-key="kasbon" href="dashboard-hc.html#kasbon">Kasbon</a>
+      <a class="menu-item" data-key="rekonsiliasi" href="rekonsiliasi-payroll.html">Rekonsiliasi Payroll</a>
+      <a class="menu-item" data-key="pengajuan-offering" href="konfigurasi-penggajian.html#offering">Pengajuan Offering<span class="menu-badge" id="badge-pengajuan-offering"></span></a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-jenispengajuan', this)">
+      <svg viewBox="0 0 24 24"><path d="M6 2.5h9l4.5 4.5v14.5H6z"/><path d="M15 2.5V7h4.5M8.5 12.5h7M8.5 16h7"/></svg>
+      Pengajuan &amp; Persetujuan
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-jenispengajuan" style="display:none">
+      <a class="menu-item" href="pengajuan-persetujuan.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#pengajuan">Pengajuan</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#persetujuan">Persetujuan</a>
+      <a class="menu-item" href="pengajuan-persetujuan.html#riwayat">Riwayat</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-attendance', this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Jadwal &amp; Kehadiran
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-attendance" style="display:none">
+      <a class="menu-item" href="attendance-schedule.html#dashboard">Dashboard</a>
+      <a class="menu-item" href="attendance-schedule.html#kehadiran">Kehadiran</a>
+      <a class="menu-item" href="attendance-schedule.html#jadwal">Jadwal Kerja</a>
+      <a class="menu-item" href="attendance-schedule.html#shift">Shift Management</a>
+      <a class="menu-item" href="attendance-schedule.html#kalender">Kalender Kerja</a>
+      <a class="menu-item" href="attendance-schedule.html#monitoring">Monitoring</a>
+    </div>
+    <div class="menu-item open active-parent" onclick="toggleSubmenu('sub-document', this)">
+      <svg viewBox="0 0 24 24"><path d="M2 20h20M4 20V10l4-3 4 3v10M12 20V6l4-3 4 3v14"/></svg>
+      Dokumen
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-document" style="display:block">
+      <div class="menu-item active" data-page="dashboard" onclick="goPage('dashboard', this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="menu-item" data-page="buatdokumen" onclick="goPage('buatdokumen', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Buat Dokumen
+      </div>
+      <div class="menu-item" data-page="uploaddokumen" onclick="goPage('uploaddokumen', this)">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Dokumen
+      </div>
+      <div class="menu-item" data-page="reviewriwayat" onclick="goPage('reviewriwayat', this)">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Review dan Riwayat<span class="menu-badge" id="badge-reviewriwayat"></span>
+      </div>
+      <div class="menu-item" data-page="mastertemplate" onclick="goPage('mastertemplate', this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Master Template
+      </div>
+      <div class="menu-item" data-page="kontroldokumen" onclick="goPage('kontroldokumen', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        Kontrol Dokumen
+      </div>
+      <div class="menu-item" data-page="repository" onclick="goPage('repository', this)">
+        <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+        Repository
+      </div>
+      <div class="menu-item" data-page="arsip" onclick="goPage('arsip', this)">
+        <svg viewBox="0 0 24 24"><path d="M4 22h14a2 2 0 002-2V7.5L14.5 2H6a2 2 0 00-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>
+        Arsip
+      </div>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-rekrutmen', this)">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Rekrutmen
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-rekrutmen" style="display:none">
+      <a class="menu-item" href="rekrutmen.html#dashboard">Dashboard Rekrutmen</a>
+      <a class="menu-item" href="rekrutmen.html#lowongan">Lowongan</a>
+      <a class="menu-item" href="rekrutmen.html#kandidat">Kandidat</a>
+      <a class="menu-item" href="rekrutmen.html#konfigurasi">Konfigurasi Rekrutmen</a>
+      <a class="menu-item" href="rekrutmen.html#offering">Status Pengajuan</a>
+    </div>
+    <div class="menu-item" onclick="toggleSubmenu('sub-talent', this)">
+      <svg viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V17c0 1.1 2.7 3 6 3s6-1.9 6-3v-4.5"/></svg>
+      Manajemen Talenta
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="submenu" id="sub-talent" style="display:none">
+      <a class="menu-item" href="learning-center-hc.html">Pusat Pembelajaran</a>
+      <a class="menu-item" href="performance-management-hc.html">Manajemen Performa</a>
+      <a class="menu-item" href="talent-assessment-hc.html">Pusat Assesment Talenta</a>
+    </div>
+    <a class="menu-item" href="user-management.html">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Manajemen Pengguna
+    </a>
+
+    <div class="sidebar-foot">
+      <div class="sidebar-user">
+        <div class="avatar">TA</div>
+        <div>
+          <div class="u-name">Tes Admin</div>
+          <div class="u-role" id="sidebar-role-label">CRC — Corporate Regulatory Compliance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-right" style="margin-left: auto;">
+        <div class="icon-btn" title="Notifikasi"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="dot"></span></div>
+        <div class="icon-btn" title="Bantuan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2 1.5-2 3.5"/><path d="M12 17h.01"/></svg></div>
+        <div class="topbar-user">
+          <div class="avatar">TA</div>
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="var(--gray-400)" fill="none" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-bar" id="loading-bar"></div>
+    <div class="content">
+
+      <div class="breadcrumb-trail" id="breadcrumb-trail">
+        <span>Home / Dokumen / <b>Dashboard</b></span>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- PAGE: DASHBOARD -->
+      <!-- ============================================================ -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div>
+            <h1>Dashboard</h1>
+            <div class="sub">Pusat informasi dokumen</div>
+          </div>
+          
+          <!-- FILTER GLOBAL WAKTU -->
+          <div style="display:flex;align-items:center;gap:10px;">
+            <label for="dash-filter-bulan" class="muted" style="font-size:12px;font-weight:600;">Filter:</label>
+            <div class="form-field" style="margin:0;">
+              <select id="dash-filter-bulan" onchange="renderDashboard()" style="padding:6px 12px;font-size:13px;width:auto;min-width:140px;border-radius:20px;">
+                <option value="all" selected>Semua Bulan</option>
+                <option value="2026-09">September 2026</option>
+                <option value="2026-08">Agustus 2026</option>
+                <option value="2026-07">Juli 2026</option>
+                <option value="2026-06">Juni 2026</option>
+                <option value="2026-05">Mei 2026</option>
+                <option value="2026-04">April 2026</option>
+                <option value="2026-03">Maret 2026</option>
+                <option value="2026-02">Februari 2026</option>
+                <option value="2026-01">Januari 2026</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+       <div class="grid-12" style="margin-bottom:16px;">
+          
+          <!-- KOTAK BIRU -->
+          <div class="col-3 kpi-card" onclick="dashOpenMetric('persetujuan')" style="cursor:pointer; background: var(--primary-light); border-color: rgba(37, 99, 235, 0.2);">
+            <div class="top">
+              <div class="kpi-icon" style="background: var(--primary); color: #fff;">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <circle cx="12" cy="14" r="4"></circle>
+                  <polyline points="12 12 12 14 14 14"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="lbl" style="color: var(--primary-dark, #1e40af);">Menunggu Persetujuan Saya</div>
+            <div class="val" id="kpi-approval" style="color: var(--primary);">—</div>
+            <div class="kpi-delta flat" style="color: var(--primary);">Tertahan di antrean (butuh approve)</div>
+          </div>
+
+          <!-- KOTAK KUNING/ORANYE -->
+          <div class="col-3 kpi-card" onclick="dashOpenMetric('revisi')" style="cursor:pointer; background: var(--amber-bg); border-color: rgba(217, 119, 6, 0.2);">
+            <div class="top">
+              <div class="kpi-icon" style="background: var(--amber); color: #fff;">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="lbl" style="color: #92400e;">Perlu Saya Revisi</div>
+            <div class="val" id="kpi-revisi" style="color: var(--amber);">—</div>
+            <div class="kpi-delta flat" style="color: #b45309;">Draf dikembalikan oleh approver</div>
+          </div>
+
+          <!-- KOTAK MERAH -->
+          <div class="col-3 kpi-card" onclick="dashOpenMetric('kedaluwarsa')" style="cursor:pointer; background: var(--red-bg); border-color: rgba(220, 38, 38, 0.2);">
+            <div class="top">
+              <div class="kpi-icon" style="background: var(--red); color: #fff;">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <line x1="12" y1="14" x2="12" y2="18"></line>
+                  <line x1="12" y1="22" x2="12.01" y2="22"></line>
+                </svg>
+              </div>
+            </div>
+            <div class="lbl" style="color: #991b1b;">Dokumen Segera Kedaluwarsa</div>
+            <div class="val" id="kpi-expired" style="color: var(--red);">—</div>
+            <div class="kpi-delta down" style="color: var(--red);">Habis dlm 30–60 hari ke depan</div>
+          </div>
+
+          <!-- KOTAK HIJAU -->
+          <div class="col-3 kpi-card" onclick="dashOpenMetric('aktif')" style="cursor:pointer; background: var(--green-bg); border-color: rgba(16, 185, 129, 0.2);">
+            <div class="top">
+              <div class="kpi-icon" style="background: var(--green); color: #fff;">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="lbl" style="color: #065f46;">Dokumen Aktif / Selesai</div>
+            <div class="val" id="kpi-aktif" style="color: var(--green);">—</div>
+            <div class="kpi-delta up" id="kpi-aktif-period" style="color: var(--green);">Total keseluruhan dokumen</div>
+          </div>
+
+        </div>
+
+        <div class="grid-12" style="margin-bottom:16px;">
+          <div class="col-12 card">
+            <div class="card-head">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <h2 style="margin:0;">Perlu Ditindaklanjuti</h2>
+                <span class="chip chip-amber" style="font-size:10.5px;padding:2px 8px;">Real-time</span>
+              </div>
+            <span class="muted" style="font-size:12px;">Klik untuk buka di Review dan Riwayat</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>No.</th><th>Subjek</th><th>Tipe</th><th>Diajukan</th><th>Status</th></tr></thead>
+                <tbody id="dash-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          <div class="col-6 card">
+            <div class="card-head"><h2>Aktivitas Terbaru</h2></div>
+            <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;" id="dash-activity"></div>
+          </div>
+          <div class="col-6 card">
+            <div class="card-head" style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <h2 style="margin:0;">Pintasan Saya</h2>
+                <span class="muted" style="font-size:12px;">Dokumen Favorit</span>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addPinnedDoc()">+ Tambah</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;" id="dash-shortcuts">
+              <!-- Konten akan dirender secara dinamis oleh JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END DASHBOARD -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: BUAT DOKUMEN -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-buatdokumen">
+        <div class="page-head">
+          <div>
+            <h1>Buat Dokumen</h1>
+            <div class="sub">Pembuatan dokumen massal untuk 9 jenis kontrak/kemitraan di luar Offering Letter — Offering punya jalur sendiri lewat Rekrutmen</div>
+          </div>
+        </div>
+
+        <div class="note-box" style="background:var(--primary-light);border:1px solid var(--primary-100);color:var(--primary-dark);border-radius:10px;padding:11px 14px;font-size:12px;margin-bottom:18px;display:flex;gap:8px;align-items:flex-start;">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+          <span><b>Opsional — PKS dari Rekrutmen:</b> kalau dokumen ini untuk kandidat yang datanya sudah ada di Rekrutmen, <a href="#" onclick="event.preventDefault();showToast('Simulasi: data kandidat dari Rekrutmen ditarik otomatis, lanjut ke Step 1.')" style="font-weight:700;">tarik datanya langsung dari sana</a> supaya tidak perlu ketik ulang.</span>
+        </div>
+
+        <div class="wizard-steps" id="bd-nav">
+          <div class="wz-step active" id="bd-nav-1"><div class="num">1</div><div class="lbl"><span class="k">Step 1</span><span class="t">Pilih Jenis Dokumen</span></div></div>
+          <div class="wz-step" id="bd-nav-2"><div class="num">2</div><div class="lbl"><span class="k">Step 2</span><span class="t">Info Batch</span></div></div>
+          <div class="wz-step" id="bd-nav-3"><div class="num">3</div><div class="lbl"><span class="k">Step 3</span><span class="t">Data Utama</span></div></div>
+          <div class="wz-step" id="bd-nav-4"><div class="num">4</div><div class="lbl"><span class="k">Step 4</span><span class="t">Detail per Jenis</span></div></div>
+          <div class="wz-step" id="bd-nav-5"><div class="num">5</div><div class="lbl"><span class="k">Step 5</span><span class="t">Preview &amp; Generate</span></div></div>
+          <div class="wz-step" id="bd-nav-6"><div class="num">6</div><div class="lbl"><span class="k">Step 6</span><span class="t">Review &amp; Approval</span></div></div>
+        </div>
+
+        <div class="card">
+          <!-- STEP 1: Pilih Jenis Dokumen -->
+          <div class="wz-panel active" id="bd-panel-1">
+            <div class="section-label">Pilih satu atau lebih jenis dokumen — hanya yang berstatus Published yang bisa dipilih</div>
+            <div id="bd-jenis-list"></div>
+          </div>
+
+          <!-- STEP 2: Info Batch -->
+          <div class="wz-panel" id="bd-panel-2">
+            <div class="form-field" style="max-width:420px;margin-bottom:18px;">
+              <label>Nama Batch</label>
+              <input type="text" id="bd-batch-nama" placeholder="mis. Kontrak Kerja Batch Agustus 2026">
+            </div>
+            <div class="section-label">Pilih Alur Approval — berlaku untuk seluruh batch ini</div>
+            <div class="alur-card selected" data-alur="checklist" onclick="bdSelectAlur('checklist', this)">
+              <div class="t">CRC Review</div>
+              <div class="s">Siapa pun berkapabilitas CRC mengisi checklist SOP/QC (4 item) — tidak ada approve/reject, status akhirnya "Direview".</div>
+            </div>
+            <div class="alur-card" data-alur="approval" onclick="bdSelectAlur('approval', this)">
+              <div class="t">CRC Review &amp; Approval</div>
+              <div class="s">Siapa pun berkapabilitas CRC bisa approve ("Disetujui") atau tolak ("Diminta Revisi") per dokumen.</div>
+            </div>
+            <div class="alur-card" data-alur="superadmin" onclick="bdSelectAlur('superadmin', this)">
+              <div class="t">Super Admin Approval</div>
+              <div class="s">Sama seperti di atas, tapi kewenangan approve/reject dipegang akun Super Admin (PCC) — dokumen otomatis dibagikan aksesnya ke PCC.</div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Data Utama -->
+          <div class="wz-panel" id="bd-panel-3">
+            <div class="section-label">Data inti penerima — bisa lebih dari satu orang dalam satu batch</div>
+            <div id="bd-recipients"></div>
+            <button class="btn btn-outline btn-sm" onclick="bdAddRecipient()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Tambah Penerima</button>
+          </div>
+
+          <!-- STEP 4: Detail per Jenis -->
+          <div class="wz-panel" id="bd-panel-4">
+            <div class="section-label">Field tambahan khusus untuk tiap jenis dokumen terpilih</div>
+            <div id="bd-detail-jenis"></div>
+          </div>
+
+          <!-- STEP 5: Preview & Generate -->
+          <div class="wz-panel" id="bd-panel-5">
+            <div class="section-label">Tinjau sebelum Generate — satu aksi ini membuat dokumen Google Docs asli untuk setiap kombinasi Penerima × Jenis Dokumen</div>
+            <div id="bd-preview"></div>
+            <div id="bd-generate-result"></div>
+          </div>
+
+          <!-- STEP 6: Review & Approval -->
+          <div class="wz-panel" id="bd-panel-6">
+            <div class="section-label">Hasil generate — kirim ke reviewer sesuai Alur Approval yang dipilih di Step 2</div>
+            <div id="bd-result-list"></div>
+            <div style="display:flex;gap:10px;margin-top:14px;">
+              <button class="btn btn-primary" onclick="bdKirimReviewer()">Kirim ke Reviewer</button>
+              <button class="btn btn-outline" onclick="bdSelesaikanBatch()">Selesai — Simpan ke Repository</button>
+            </div>
+          </div>
+
+          <div class="wz-footer">
+            <button class="btn btn-outline" id="bd-btn-back" onclick="bdPrev()" style="visibility:hidden;">Kembali</button>
+            <button class="btn btn-primary" id="bd-btn-next" onclick="bdNext()">Lanjut</button>
+          </div>
+        </div>
+      </div>
+      <!-- END BUAT DOKUMEN -->
+<!-- ============================================================ -->
+      <!-- PAGE: UPLOAD DOKUMEN (Mandiri / Eksternal) -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-uploaddokumen">
+        <div class="page-head">
+          <div>
+            <h1>Upload Dokumen</h1>
+            <div class="sub">Unggah dokumen eksternal, manual mutu, atau file mandiri yang sudah memiliki format tersendiri</div>
+          </div>
+        </div>
+
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+          <div class="card-head">
+            <h2>Form Unggah Berkas Mandiri</h2>
+            <span class="muted" style="font-size:12px;">Format yang didukung: PDF, DOCX, XLSX (Maks. 25MB)</span>
+          </div>
+
+          <form onsubmit="handleUploadDokumen(event)">
+            <!-- STEP 1: Identitas Dokumen -->
+            <div class="section-label" style="margin-top: 10px;">1. Informasi &amp; Identitas Dokumen</div>
+            <div class="form-grid" style="margin-bottom: 16px;">
+              <div class="form-field">
+                <label>Nama Dokumen <span style="color:var(--red);">*</span></label>
+                <input type="text" id="up-nama" placeholder="mis. Manual Mutu Perusahaan 2026" required>
+              </div>
+              <div class="form-field">
+                <label>Kategori Dokumen <span style="color:var(--red);">*</span></label>
+                <select id="up-kategori" required>
+                  <option value="">Pilih Kategori...</option>
+                  <option value="Manual Mutu">Manual Mutu</option>
+                  <option value="SOP / Prosedur">SOP / Prosedur</option>
+                  <option value="Surat Keputusan">Surat Keputusan</option>
+                  <option value="Kemitraan & Perjanjian">Kemitraan &amp; Perjanjian</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid" style="margin-bottom: 16px;">
+              <div class="form-field">
+                <label>Unit Organisasi Pemilik <span style="color:var(--red);">*</span></label>
+                <select id="up-unit" required>
+                  <option value="">Pilih Unit...</option>
+                  <option value="Direktorat HC / Finance & Corporate">Direktorat HC / Finance &amp; Corporate</option>
+                  <option value="Direktorat Komersial">Direktorat Komersial</option>
+                  <option value="Direktorat Teknologi & Jaringan">Direktorat Teknologi &amp; Jaringan</option>
+                  <option value="Corporate Regulatory Compliance">Corporate Regulatory Compliance (CRC)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Tanggal Efektif Berlakunya</label>
+                <input type="date" id="up-tanggal">
+              </div>
+            </div>
+
+            <!-- STEP 2: Area Upload File -->
+            <div class="section-label" style="margin-top: 24px;">2. Berkas Dokumen</div>
+            <div class="form-field" style="margin-bottom: 24px;">
+              <div style="border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 32px; text-align: center; background: var(--gray-50); cursor: pointer;" onclick="document.getElementById('up-file-input').click()">
+                <svg viewBox="0 0 24 24" width="36" height="36" stroke="var(--primary)" fill="none" stroke-width="1.8" style="margin: 0 auto 10px; display:block;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 4px;" id="up-file-label">Klik untuk memilih file atau seret file ke sini</div>
+                <div class="muted" style="font-size: 11.5px;">PDF, DOCX, atau XLSX dengan ukuran maksimal 25 MB</div>
+                <input type="file" id="up-file-input" style="display: none;" onchange="updateFileLabel(this)">
+              </div>
+            </div>
+
+            <!-- Aksi Tombol -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--gray-200); padding-top: 16px;">
+              <button type="button" class="btn btn-outline" onclick="goPage('dashboard', document.querySelector('.menu-item[data-page=dashboard]'))">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan &amp; Masukkan ke Repository</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- END UPLOAD DOKUMEN -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: REVIEW DAN RIWAYAT -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-reviewriwayat">
+        <div class="tabbar" style="max-width:520px;margin-top:4px;">
+          <div class="tab active" onclick="rrSwitchTab('review', this)">Review <span class="n" id="rr-count-review">0</span></div>
+          <div class="tab" onclick="rrSwitchTab('riwayat', this)">Riwayat <span class="n" id="rr-count-riwayat">0</span></div>
+        </div>
+
+        <div id="rr-bulk-bar" style="display:none;background:var(--gray-900);color:#fff;border-radius:10px;padding:10px 16px;align-items:center;gap:14px;margin-bottom:14px;font-size:12.5px;">
+          <span id="rr-bulk-count">0 dipilih</span>
+          <span style="flex:1;"></span>
+          <button class="btn btn-sm btn-danger" onclick="rrBulkAction('reject')">Tolak / Minta Revisi</button>
+          <button class="btn btn-sm btn-success" onclick="rrBulkAction('approve')">Setujui Bersama</button>
+        </div>
+
+        <div class="split-list">
+          <div class="split-list-head">
+            <span style="font-size:12px;font-weight:600;color:var(--gray-600);">Centang checkbox di header tabel untuk Review Bersama (pilih beberapa baris sekaligus)</span>
+          </div>
+          <div class="split-list-items" id="rr-list" style="overflow-x:auto;"></div>
+        </div>
+      </div>
+      <!-- END REVIEW DAN RIWAYAT -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: MASTER TEMPLATE -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-mastertemplate">
+        <div class="page-head">
+          <div>
+            <h1>Master Template</h1>
+            <div class="sub">Satu-satunya menu yang mengelola template resmi perusahaan — hanya CRC yang bisa menulis di sini, role lain read-only</div>
+          </div>
+        </div>
+        <div class="mt-layout" id="mt-layout">
+          <div class="mt-pane-group">
+            <div class="mt-pane mt-pane-kategori" id="mt-pane-kategori">
+              <div class="mt-col-head"><h2>Kategori</h2><div class="mt-col-actions">
+                <button class="mt-icon-btn" title="Refresh" onclick="showToast('Kategori dimuat ulang.')"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-2.6-6.4M21 4v6h-6"/></svg></button>
+                <button class="mt-icon-btn" title="Tambah Kategori" onclick="showToast('Form tambah kategori baru.')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
+              </div></div>
+              <div id="mt-kategori-list"></div>
+              <div class="mt-resize-handle" id="mt-resize-1" title="Tarik untuk mengubah lebar"></div>
+            </div>
+            <div class="mt-pane mt-pane-jenis" id="mt-pane-jenis">
+              <div class="mt-col-head"><h2 id="mt-jenis-head">Jenis Dokumen</h2><div class="mt-col-actions">
+                <button class="mt-icon-btn" title="Tambah Jenis Dokumen" onclick="showToast('Form tambah jenis dokumen baru di kategori ini.')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
+              </div></div>
+              <div id="mt-jenis-list"></div>
+              <div class="mt-resize-handle" id="mt-resize-2" title="Tarik untuk mengubah lebar"></div>
+            </div>
+          </div>
+          <div class="card mt-pane-detail" id="mt-detail"></div>
+        </div>
+      </div>
+      <!-- END MASTER TEMPLATE -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: KONTROL DOKUMEN -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-kontroldokumen">
+        <div class="page-head">
+          <div>
+            <h1>Kontrol Dokumen</h1>
+            <div class="sub">Registry tunggal seluruh dokumen yang pernah diregistrasi sistem — Offering Letter maupun 9 jenis dokumen lain, lintas direktorat</div>
+          </div>
+          <button class="btn btn-outline"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> Export</button>
+        </div>
+        <div class="card toolbar-card" style="margin-bottom:16px;">
+          <div class="toolbar-row">
+            <div class="form-field" style="min-width:220px;">
+              <div class="topbar-search" style="min-width:0;">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" placeholder="Cari No. Registrasi atau nama dokumen...">
+              </div>
+            </div>
+            <div class="form-field"><select><option>Semua Jenis</option><option>Offering Letter</option><option>PKWT</option><option>PBKK</option><option>SKEP</option></select></div>
+            <div class="form-field"><select><option>Semua Unit Organisasi</option><option>Direktorat HC / Finance &amp; Corporate</option><option>Direktorat Komersial</option><option>Direktorat Teknologi &amp; Jaringan</option></select></div>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>No. Registrasi</th><th>Jenis</th><th>Kategori</th><th>Unit Organisasi Pemilik</th><th>Tgl Registrasi</th><th>Inisiator</th><th>Status</th></tr></thead>
+              <tbody id="kd-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- END KONTROL DOKUMEN -->
+
+      <!-- ============================================================ -->
+      <!-- PAGE: REPOSITORY -->
+      <!-- ============================================================ -->
+      <!-- ============================================================ -->
+      <!-- PAGE: REPOSITORY (Google Drive Style - Two Column Explorer) -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-repository">
+        <div class="page-head" style="margin-bottom: 16px;">
+          <div>
+            <h1>Repository Dokumen</h1>
+            <div class="sub">Direktori penyimpanan terpusat berdasarkan struktur kategori dan jenis dokumen</div>
+          </div>
+        </div>
+
+        <!-- LAYOUT 2 KOLOM (SIDE-BY-SIDE) -->
+        <div style="display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start;">
+          
+          <!-- KOLOM KIRI: FOLDER TREE EXPLORER -->
+          <div class="card" style="padding: 12px; margin: 0;">
+            <div style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: var(--gray-400); letter-spacing: 0.5px; padding: 6px 10px 10px;">
+              Folder Explorer
+            </div>
+            <div id="repo-folder-tree" style="display: flex; flex-direction: column; gap: 4px;">
+              <!-- Folder tree akan dirender otomatis oleh JS -->
+            </div>
+          </div>
+
+          <!-- KOLOM KANAN: KONTEN FILE DALAM FOLDER -->
+          <div class="card" style="margin: 0; padding: 0; overflow: hidden;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; background: var(--gray-50);">
+              <div>
+                <div id="repo-current-folder-title" style="font-weight: 700; font-size: 14px; color: var(--gray-800);">Semua Dokumen</div>
+                <div id="repo-current-folder-desc" class="muted" style="font-size: 11.5px; margin-top: 2px;">Menampilkan seluruh dokumen aktif di dalam sistem</div>
+              </div>
+              <div class="topbar-search" style="max-width: 240px; background: #fff;">
+                <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="repo-search-input" placeholder="Cari file di folder..." oninput="renderRepoFiles()" style="border:none; background:transparent; outline:none; font-family:inherit; font-size:12.5px; width:100%; color:var(--gray-800);">
+              </div>
+            </div>
+
+            <div class="table-wrap" style="margin: 0; border: none;">
+              <table style="width: 100%; margin: 0;">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">No.</th>
+                    <th>Nama / Subjek Dokumen</th>
+                    <th>Jenis / Kategori</th>
+                    <th>Tanggal Efektif</th>
+                    <th style="text-align: right;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="repo-files-tbody">
+                  <!-- List file akan dirender otomatis oleh JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- END REPOSITORY -->
+<!-- ============================================================ -->
+      <!-- PAGE: ARSIP -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-arsip">
+        <div class="page-head">
+          <div>
+            <h1>Arsip</h1>
+            <div class="sub">Penyimpanan dokumen usang, kedaluwarsa, atau versi lama yang telah digantikan</div>
+          </div>
+        </div>
+        <div class="card toolbar-card" style="margin-bottom:16px;">
+          <div class="toolbar-row">
+            <div class="form-field" style="min-width:220px;">
+              <div class="topbar-search" style="min-width:0;">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" placeholder="Cari arsip dokumen...">
+              </div>
+            </div>
+            <div class="form-field"><select><option>Semua Kategori</option><option>Kontrak Kerja</option><option>Kemitraan</option><option>Surat Keputusan</option></select></div>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>No. Registrasi</th><th>Subjek Dokumen</th><th>Versi Lama</th><th>Tgl Diarsipkan</th><th>Alasan / Keterangan</th><th>Status</th></tr></thead>
+              <tbody id="arsip-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- END ARSIP -->
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: DETAIL REVIEW & RIWAYAT -->
+<div class="drawer-overlay" id="rr-detail-overlay" onclick="closeRrDetail()"></div>
+<div class="drawer drawer-wide-560" id="rr-detail-drawer">
+  <div class="drawer-head">
+    <h2 id="rr-detail-title">—</h2>
+    <button class="modal-close" onclick="closeRrDetail()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body" id="rr-detail-body"></div>
+  <div class="drawer-foot" id="rr-detail-foot"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="dash-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);align-items:center;justify-content:center;z-index:260;padding:20px;">
+  <div style="background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);width:min(720px,96vw);max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div class="drawer-head">
+      <h2 id="dash-modal-title">—</h2>
+      <button class="modal-close" onclick="closeDashModal()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="drawer-body" id="dash-modal-body" style="padding:0;overflow-y:auto;flex:1;"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data-layer.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+  var getCollection = DasariaData.getCollection;
+  var updateDocument = DasariaData.updateDocument;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+  function toggleSubmenu(id, el){
+    const sub = document.getElementById(id);
+    const open = sub.style.display !== 'none';
+    sub.style.display = open ? 'none' : 'block';
+    el.classList.toggle('open', !open);
+  }
+  function showLoadingBar(){
+    const bar = document.getElementById('loading-bar');
+    bar.style.width = '0'; bar.classList.add('show');
+    requestAnimationFrame(() => { bar.style.width = '70%'; });
+    clearTimeout(window.__loadingBarTimer);
+    window.__loadingBarTimer = setTimeout(() => {
+      bar.style.width = '100%';
+      setTimeout(() => { bar.classList.remove('show'); bar.style.width = '0'; }, 180);
+    }, 220);
+  }
+  const pageLabels = { dashboard:'Dashboard', buatdokumen:'Buat Dokumen', uploaddokumen:'Upload Dokumen', reviewriwayat:'Review dan Riwayat', mastertemplate:'Master Template', kontroldokumen:'Kontrol Dokumen', repository:'Repository', arsip:'Arsip' };
+  function goPage(key, el){
+    showLoadingBar();
+    document.querySelectorAll('.menu-item[data-page]').forEach(n=>n.classList.remove('active'));
+    if(el) el.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const target = document.getElementById('page-' + key);
+    if(target) target.classList.add('active');
+    document.title = 'Dasaria HRIS — ' + pageLabels[key];
+    document.querySelector('#breadcrumb-trail span').innerHTML = 'Home / Dokumen / <b>' + pageLabels[key] + '</b>';
+    document.getElementById('breadcrumb-trail').style.display = (key === 'reviewriwayat') ? 'none' : '';
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  function getBuatDokumenJenisList(){
+    const list = [];
+    mtCategories.forEach(kat => {
+      if(kat.id === 'rekrutmen') return;
+      kat.jenis.forEach(j => {
+        list.push({ key:j.kode, nama:j.nama, kategori:kat.nama, status:j.status, siapDipakai: j.status === 'Published' && !!j.googleDocId });
+      });
+    });
+    return list;
+  }
+
+  let bdStep = 1;
+  let bdSelectedJenis = [];
+  let bdAlur = 'checklist';
+  let bdRecipients = ['Ahmad Fauzi'];
+  let bdGenerated = [];
+
+function renderBdJenisList(){
+    const listContainer = document.getElementById('bd-jenis-list');
+    if (!listContainer) return;
+
+    // Ambil data jenis dokumen
+    const allJenis = getBuatDokumenJenisList();
+
+    // Render struktur HTML (Search bar + Container list)
+    listContainer.innerHTML = `
+      <div style="margin-bottom: 14px; max-width: 320px;">
+        <div class="topbar-search" style="min-width: 0; background: #fff;">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="bd-search-input" placeholder="Cari jenis dokumen..." oninput="filterBdJenisList()" style="border:none; background:transparent; outline:none; font-family:inherit; font-size:13px; width:100%; color:var(--gray-800);">
+        </div>
+      </div>
+      <div id="bd-jenis-items-container">
+        ${generateBdItemsHtml(allJenis)}
+      </div>
+    `;
+  }
+
+  // Helper untuk merender list item
+  function generateBdItemsHtml(items) {
+    return items.map(j => {
+      const disabled = !j.siapDipakai;
+      const checked = bdSelectedJenis.includes(j.key);
+      const reason = !disabled ? 'Siap dipakai' : (j.status !== 'Published' ? 'Belum bisa dipilih — status Master Template masih Draft' : 'Belum bisa dipilih — belum ada Google Docs Template ID di Master Template');
+      return '<label class="wz-check-row' + (disabled?' disabled':'') + '">' +
+        '<input type="checkbox" ' + (checked?'checked':'') + ' ' + (disabled?'disabled':'') + ' onchange="bdToggleJenis(\'' + j.key + '\', this.checked)">' +
+        '<div style="flex:1;"><div class="t">' + j.nama + ' <span class="chip ' + (j.status==='Published'?'chip-green':'chip-gray') + '" style="margin-left:6px;"><i></i>' + j.status + '</span></div>' +
+        '<div class="s">' + j.kategori + ' · ' + reason + '</div></div>' +
+      '</label>';
+    }).join('') || '<div class="muted" style="padding: 20px; text-align: center;">Tidak ada jenis dokumen yang cocok dengan pencarian.</div>';
+  }
+// Fungsi untuk memfilter daftar jenis dokumen saat diketik di search bar
+  function filterBdJenisList() {
+    const keyword = document.getElementById('bd-search-input').value.toLowerCase();
+    const allJenis = getBuatDokumenJenisList();
+    
+    // Filter berdasarkan nama atau kategori
+    const filtered = allJenis.filter(j => 
+      j.nama.toLowerCase().includes(keyword) || 
+      j.kategori.toLowerCase().includes(keyword) || 
+      j.key.toLowerCase().includes(keyword)
+    );
+
+    // Update tampilan list item saja tanpa merender ulang search bar-nya
+    const itemsContainer = document.getElementById('bd-jenis-items-container');
+    if (itemsContainer) {
+      itemsContainer.innerHTML = generateBdItemsHtml(filtered);
+    }
+  }
+
+  window.bdToggleJenis = function(key, checked){
+    if(checked) bdSelectedJenis.push(key); else bdSelectedJenis = bdSelectedJenis.filter(k => k !== key);
+  };
+  window.bdSelectAlur = function(alur, el){
+    bdAlur = alur;
+    document.querySelectorAll('.alur-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  };
+  function renderBdRecipients(){
+    document.getElementById('bd-recipients').innerHTML = bdRecipients.map((r, i) =>
+      '<div class="recipient-row"><input type="text" value="' + r + '" onchange="bdRecipients[' + i + ']=this.value" placeholder="Nama penerima"> ' +
+      (bdRecipients.length > 1 ? '<button class="btn btn-outline btn-sm" onclick="bdRemoveRecipient(' + i + ')">Hapus</button>' : '') + '</div>'
+    ).join('');
+  }
+  window.bdAddRecipient = function(){ bdRecipients.push(''); renderBdRecipients(); };
+  window.bdRemoveRecipient = function(i){ bdRecipients.splice(i, 1); renderBdRecipients(); };
+
+  function renderBdDetailJenis(){
+    const catalog = getBuatDokumenJenisList();
+    document.getElementById('bd-detail-jenis').innerHTML = bdSelectedJenis.map(key => {
+      const j = catalog.find(x => x.key === key) || { nama:key, kategori:'-' };
+      return '<div class="paket-card"><div class="t">' + j.nama + '</div><div class="s">' + j.kategori + '</div>' +
+        '<div class="form-grid"><div class="form-field"><label>Tanggal Efektif</label><input type="date"></div>' +
+        '<div class="form-field"><label>Catatan Tambahan</label><input type="text" placeholder="Opsional"></div></div></div>';
+    }).join('') || '<div class="muted" style="font-size:12.5px;">Pilih jenis dokumen dulu di Step 1.</div>';
+  }
+  function renderBdPreview(){
+    const combos = [];
+    bdRecipients.filter(r => r.trim()).forEach(r => bdSelectedJenis.forEach(j => combos.push(r + ' × ' + j)));
+    document.getElementById('bd-preview').innerHTML =
+      '<div class="wz-summary-row"><span>Nama Batch</span><b>' + (document.getElementById('bd-batch-nama').value || '-') + '</b></div>' +
+      '<div class="wz-summary-row"><span>Alur Approval</span><b>' + ({checklist:'CRC Review', approval:'CRC Review & Approval', superadmin:'Super Admin Approval'}[bdAlur]) + '</b></div>' +
+      '<div class="wz-summary-row"><span>Jenis Dokumen</span><b>' + bdSelectedJenis.join(', ') + '</b></div>' +
+      '<div class="wz-summary-row"><span>Jumlah Kombinasi (Penerima × Jenis)</span><b>' + combos.length + ' dokumen</b></div>';
+  }
+  window.bdGenerate = function(){
+    bdGenerated = [];
+    bdRecipients.filter(r => r.trim()).forEach(r => bdSelectedJenis.forEach(j => {
+      const failed = Math.random() < 0.08;
+      bdGenerated.push({ penerima:r, jenis:j, status: failed ? 'Perlu Dicek Manual' : 'Belum Dikirim', note: failed ? 'Placeholder di template tidak terganti — cek manual.' : '' });
+    }));
+    document.getElementById('bd-generate-result').innerHTML =
+      '<div class="note-box" style="background:var(--green-bg);color:#166534;border-radius:10px;padding:12px 14px;font-size:12.5px;margin-top:14px;">' +
+      '✅ ' + bdGenerated.length + ' dokumen berhasil dibuat (Google Docs disalin dari template resmi). ' +
+      bdGenerated.filter(d => d.status === 'Perlu Dicek Manual').length + ' ditandai perlu dicek manual (placeholder tidak terganti).</div>';
+  };
+  function renderBdResultList(){
+    document.getElementById('bd-result-list').innerHTML = '<div class="table-wrap"><table><thead><tr><th>Dokumen</th><th>Penerima</th><th>Status</th></tr></thead><tbody>' +
+      bdGenerated.map(d => '<tr><td class="req-subject">' + d.jenis + '</td><td>' + d.penerima + '</td><td><span class="chip ' + (d.status==='Perlu Dicek Manual'?'chip-amber':'chip-gray') + '"><i></i>' + d.status + '</span>' + (d.note ? '<div class="muted" style="font-size:11px;margin-top:2px;">' + d.note + '</div>' : '') + '</td></tr>').join('') +
+      '</tbody></table></div>';
+  };
+  window.bdKirimReviewer = function(){
+    bdGenerated.forEach(d => { if(d.status !== 'Perlu Dicek Manual') d.status = 'Menunggu Review'; });
+    renderBdResultList();
+    showToast('Dokumen dikirim ke reviewer — cek statusnya di Review dan Riwayat.');
+  };
+  window.bdSelesaikanBatch = function(){
+    showToast('Batch ditutup & disimpan ke Repository — status tiap dokumen tetap seperti terakhir, boleh campuran.');
+  };
+  function bdGoStep(step){
+    bdStep = step;
+    for(let i=1;i<=6;i++){
+      const nav = document.getElementById('bd-nav-' + i);
+      nav.classList.remove('active','done');
+      if(i < step) nav.classList.add('done');
+      if(i === step) nav.classList.add('active');
+      document.getElementById('bd-panel-' + i).classList.toggle('active', i === step);
+    }
+    document.getElementById('bd-btn-back').style.visibility = step === 1 ? 'hidden' : 'visible';
+    document.getElementById('bd-btn-next').style.display = step === 6 ? 'none' : '';
+    if(step === 3) renderBdRecipients();
+    if(step === 4) renderBdDetailJenis();
+    if(step === 5){ renderBdPreview(); document.getElementById('bd-generate-result').innerHTML = ''; }
+    if(step === 6) renderBdResultList();
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  window.bdNext = function(){
+    if(bdStep === 1 && bdSelectedJenis.length === 0){ showToast('Pilih minimal satu jenis dokumen dulu.'); return; }
+    if(bdStep === 5){
+      if(!bdGenerated.length){ bdGenerate(); return; }
+    }
+    if(bdStep < 6) bdGoStep(bdStep + 1);
+  };
+  window.bdPrev = function(){ if(bdStep > 1) bdGoStep(bdStep - 1); };
+
+  let edfQueue = [
+    { id:'batch-1', kind:'batch', num:'DOC-2026-0512', jenis:'PKWT', kategori:'Kontrak Kerja', penerima:'Rizky Pratama', unit:'Griyanet — Cabang Blitar', inisiator:'Tes Admin', created:'20 Ags 2026, 11:00', alur:'approval',
+      timeline:[
+        {stage:'Digenerate', who:'Tes Admin', time:'20 Ags 2026, 11:00', state:'done'},
+        {stage:'Menunggu Review', who:'', time:'', state:'done'},
+        {stage:'Review CRC (Approval)', who:'Menunggu Anda', time:'', state:'current'},
+        {stage:'Selesai', who:'', time:'', state:'pending'}
+      ] },
+    { id:'batch-2', kind:'batch', num:'DOC-2026-0498', jenis:'SKEP', kategori:'Surat Keputusan', penerima:'Dewi Kusuma', unit:'PT Dasarata — Cabang Kediri', inisiator:'Fajar Maulana', created:'15 Ags 2026, 09:00', alur:'checklist',
+      checklist:{ dataLengkap:false, formatSesuai:false, tidakTypo:false, dataOrganisasiBenar:false },
+      timeline:[
+        {stage:'Digenerate', who:'Fajar Maulana', time:'15 Ags 2026, 09:00', state:'done'},
+        {stage:'Menunggu Review', who:'', time:'', state:'done'},
+        {stage:'Review CRC (Checklist)', who:'Menunggu Anda', time:'', state:'current'},
+        {stage:'Selesai', who:'', time:'', state:'pending'}
+      ] },
+    { id:'batch-3', kind:'batch', num:'DOC-2026-0470', jenis:'PBKK', kategori:'Kemitraan', penerima:'Yoga Adi', unit:'Griyanet — Cabang Malang', inisiator:'Nanda Putri', created:'8 Ags 2026, 13:00', alur:'superadmin',
+      timeline:[
+        {stage:'Digenerate', who:'Nanda Putri', time:'8 Ags 2026, 13:00', state:'done'},
+        {stage:'Menunggu Review', who:'', time:'', state:'done'},
+        {stage:'Approval Super Admin (PCC)', who:'Menunggu PCC', time:'', state:'current'},
+        {stage:'Selesai', who:'', time:'', state:'pending'}
+      ] },
+    { id:'batch-4', kind:'batch', num:'DOC-2026-0455', jenis:'PKWT', kategori:'Kontrak Kerja', penerima:'Ahmad Fauzi', unit:'PT Dasarata — Cabang Malang', inisiator:'Tes Admin', created:'1 Ags 2026, 10:00', alur:'approval',
+      timeline:[
+        {stage:'Digenerate', who:'Tes Admin', time:'1 Ags 2026, 10:00', state:'done'},
+        {stage:'Menunggu Review', who:'', time:'', state:'done'},
+        {stage:'Review CRC (Approval)', who:'Tes Admin', time:'1 Ags 2026, 15:00', state:'done'},
+        {stage:'Selesai', who:'Sistem', time:'1 Ags 2026, 15:00', state:'done'}
+      ] }
+  ];
+
+  function offeringStageToTl(sub, key, label, group){
+    var s = (sub.stages && sub.stages[key]) || { status:'belum', at:null, by:null, note:'' };
+    var state = s.status === 'selesai' ? 'done' : s.status === 'ditolak' ? 'cancel' : s.status === 'proses' ? 'current' : 'pending';
+    var who = s.by || (state === 'current' ? (key === 'reviewCRC' ? 'Menunggu Anda' : 'Menunggu diproses') : '');
+    return { stage: label, who: who, time: s.at || '', state: state, note: s.note || undefined, group: group };
+  }
+  function offeringSubToEdfItem(sub){
+    var oa = sub.oa || {}, cs = sub.cs || {};
+    return {
+      id: 'sub-' + sub.id, kind: 'offering', num: sub.id, _rawSub: sub,
+      nama: oa.namaKandidat || '-', posisi: oa.jobTitle || '-', direktorat: oa.direktorat || '-',
+      divisi: oa.divisi || '-', departemen: oa.departemen || '-', jobTitle: oa.jobTitle || '-',
+      grade: oa.grade || '-', tipeKaryawan: oa.employmentType || '-',
+      thpDeal: cs.totalThpDeal || 0, gapok: cs.gajiPokok,
+      tunjTetap: cs.tunjanganTetap != null ? [{ n: 'Tunjangan Tetap', v: cs.tunjanganTetap }] : [],
+      tunjTidakTetap: cs.tunjanganTidakTetap != null ? [{ n: 'Tunjangan Tidak Tetap', v: cs.tunjanganTidakTetap }] : [],
+      inisiator: '-', created: sub.updatedAt || '-',
+      timeline: [
+        offeringStageToTl(sub, 'submitTA', 'Submit - TA'),
+        offeringStageToTl(sub, 'reviewComBen', 'Review - ComBen', 1),
+        offeringStageToTl(sub, 'reviewCRC', 'Review - CRC', 1),
+        offeringStageToTl(sub, 'approvalHC', 'Approval by HC × PCC'),
+        offeringStageToTl(sub, 'approvalKandidat', 'Approval by Kandidat'),
+        offeringStageToTl(sub, 'complete', 'Complete')
+      ],
+      esign: (sub.stages && sub.stages.approvalKandidat && sub.stages.approvalKandidat.status === 'selesai')
+        ? { status: 'Ditandatangani', dibuka: '-', ttd: sub.stages.approvalKandidat.at || '-' } : null
+    };
+  }
+  async function reloadOfferingIntoQueue(){
+    var subs = await getCollection('offering_submissions', []);
+    var real = subs.filter(function(s){ return s.status !== 'draft'; }).map(offeringSubToEdfItem);
+    edfQueue = real.concat(edfQueue.filter(function(it){ return it.kind === 'batch'; }));
+  }
+  let rrTab = 'review';
+  let rrActiveId = null;
+  let rrSelected = new Set();
+
+  function edfIsDone(item){
+    return item.timeline[item.timeline.length - 1].state === 'done';
+  }
+  function edfIsCancelled(item){
+    return item.timeline.some(t => t.state === 'cancel');
+  }
+  function edfStatusRingkas(item){
+    if(item.kind === 'offering' && item._rawSub && item._rawSub.perluRevisi) return { text:'Perlu Revisi', cls:'cancel' };
+    if(edfIsCancelled(item)) return { text:'Cancel', cls:'cancel' };
+    if(edfIsDone(item)) return { text:'Complete — Lengkap', cls:'complete' };
+    if(item.kind === 'offering'){
+      const byKandidat = item.timeline[4], byHC = item.timeline[3], comben = item.timeline[1], crc = item.timeline[2];
+      if(byKandidat.state === 'current' || byKandidat.state === 'done') return { text:'Approval by Kandidat', cls:'kandidat' };
+      if(byHC.state === 'current' || byHC.state === 'done') return { text:'Approval by HC × PCC', cls:'hc' };
+      const doneCount = [comben, crc].filter(t => t.state === 'done').length;
+      return { text:'Review — ComBen & CRC (' + doneCount + '/2 selesai)', cls:'review' };
+    }
+    const cur = item.timeline.find(t => t.state === 'current');
+    return { text: cur ? cur.stage : 'Diproses', cls:'review' };
+  }
+  function rrSwitchTab(tab, el){
+    rrTab = tab;
+    el.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    rrActiveId = null;
+    rrSelected.clear();
+    rrRenderList();
+    closeRrDetail();
+  }
+  function rrRenderList(){
+    const items = edfQueue.filter(it => rrTab === 'review' ? !(edfIsDone(it) || edfIsCancelled(it)) : (edfIsDone(it) || edfIsCancelled(it)));
+    document.getElementById('rr-count-review').textContent = edfQueue.filter(it => !(edfIsDone(it) || edfIsCancelled(it))).length;
+    document.getElementById('rr-count-riwayat').textContent = edfQueue.filter(it => edfIsDone(it) || edfIsCancelled(it)).length;
+    const rows = items.map(it => {
+      const s = edfStatusRingkas(it);
+      const subject = it.kind === 'offering' ? it.nama : it.penerima;
+      const subtitle = it.kind === 'offering' ? ('Rekrutmen — Offering Letter Kandidat (' + it.posisi + ')') : (it.kategori + ' — ' + it.jenis);
+      const sub = it._rawSub;
+      const linkCell = it.kind === 'offering'
+        ? 'OA: ' + (sub && sub.oaDocUrl ? '<a href="' + sub.oaDocUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation();">Lihat</a>' : '<span class="muted">Belum ada</span>')
+        : '<span class="muted">Belum tersambung (modul Buat Dokumen)</span>';
+      return '<tr class="' + (it.id === rrActiveId ? 'active' : '') + '" onclick="rrSelectItem(\'' + it.id + '\')" style="cursor:pointer;">' +
+        (rrTab === 'review' ? '<td onclick="event.stopPropagation();"><input type="checkbox" ' + (rrSelected.has(it.id)?'checked':'') + ' onclick="rrToggleSelect(\'' + it.id + '\', this.checked)"></td>' : '<td></td>') +
+        '<td>' +
+          '<div class="req-subject" style="font-weight:700;color:var(--gray-900);">' + subject + '</div>' +
+          '<div style="margin:4px 0 3px;"><span class="chip ' + (it.kind==='offering'?'chip-blue':'chip-purple') + '"><i></i>' + (it.kind==='offering'?'OFFER':it.jenis) + '</span></div>' +
+          '<div class="muted" style="font-size:11.5px;">' + subtitle + '</div>' +
+          '<div class="muted" style="font-size:10.5px;font-family:monospace;">' + it.num + '</div>' +
+        '</td>' +
+        '<td style="font-size:12.5px;line-height:1.9;">' + linkCell + '</td>' +
+        '<td><span class="status-ringkas ' + s.cls + '">' + s.text + '</span></td>' +
+        '<td style="text-align:center;"><button class="btn btn-outline btn-sm" style="padding:6px 10px;" onclick="event.stopPropagation();rrSelectItem(\'' + it.id + '\')"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button></td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('rr-list').innerHTML =
+      '<div class="table-wrap"><table><thead><tr>' +
+        '<th style="width:30px;">' + (rrTab === 'review' ? '<input type="checkbox" id="rr-select-all-th" onchange="rrToggleSelectAll(this)">' : '') + '</th>' +
+        '<th>Penerima &amp; Dokumen</th><th>Link Dokumen</th><th>Status Terakhir</th><th>Aksi &amp; Detail</th>' +
+      '</tr></thead><tbody>' +
+      (rows || '<tr><td colspan="5" style="padding:0;"><div style="padding:40px 20px;text-align:center;color:var(--gray-400);font-size:12.5px;">Tidak ada item di sini.</div></td></tr>') +
+      '</tbody></table></div>';
+  }
+  window.rrToggleSelectAll = function(el){
+    const items = edfQueue.filter(it => !(edfIsDone(it) || edfIsCancelled(it)));
+    if(el.checked) items.forEach(it => rrSelected.add(it.id)); else rrSelected.clear();
+    rrRenderList();
+  };
+  window.rrToggleSelect = function(id, checked){
+    if(checked) rrSelected.add(id); else rrSelected.delete(id);
+    document.getElementById('rr-bulk-bar').style.display = rrSelected.size ? 'flex' : 'none';
+    document.getElementById('rr-bulk-count').textContent = rrSelected.size + ' dipilih';
+    rrRenderList();
+  };
+  window.rrBulkAction = function(action){
+    showToast((action === 'approve' ? 'Menyetujui' : 'Menolak') + ' ' + rrSelected.size + ' item sekaligus — Review Bersama.');
+    rrSelected.clear();
+    document.getElementById('rr-bulk-bar').style.display = 'none';
+    rrRenderList();
+  };
+  window.rrSelectItem = function(id){
+    rrActiveId = id;
+    rrRenderList();
+    rrRenderDetail();
+    document.getElementById('rr-detail-drawer').classList.add('show');
+    document.getElementById('rr-detail-overlay').classList.add('show');
+  };
+  function tlDotIcon(state){
+    if(state === 'done') return '<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
+    if(state === 'cancel') return '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    return '';
+  }
+  function renderTimeline(item){
+    const rendered = [];
+    const seen = new Set();
+    item.timeline.forEach((t, i) => {
+      if(seen.has(i)) return;
+      if(t.group){
+        const partners = item.timeline.map((x,xi)=>({x,xi})).filter(o => o.x.group === t.group);
+        partners.forEach(o => seen.add(o.xi));
+        rendered.push('<div class="approval-tl-item ' + t.state + '"><div class="approval-tl-dot">' + tlDotIcon(t.state) + '</div>' +
+          partners.map(o => '<div style="margin-bottom:8px;"><span class="tl-stage">' + o.x.stage + '</span><span class="tl-parallel-tag">Paralel</span><div class="tl-meta">' + (o.x.who || 'Belum dimulai') + (o.x.time ? ' · ' + o.x.time : '') + '</div>' + (o.x.note ? '<div class="tl-note">' + o.x.note + '</div>' : '') + '</div>').join('') +
+          '</div>');
+      } else {
+        seen.add(i);
+        rendered.push('<div class="approval-tl-item ' + t.state + '"><div class="approval-tl-dot">' + tlDotIcon(t.state) + '</div>' +
+          '<div class="tl-stage">' + t.stage + '</div><div class="tl-meta">' + (t.who || (t.state==='pending'?'Belum diproses':'')) + (t.time ? ' · ' + t.time : '') + '</div>' +
+          (t.note ? '<div class="tl-note">' + t.note + '</div>' : '') +
+          '</div>');
+      }
+    });
+    return '<div class="approval-tl">' + rendered.join('') + '</div>';
+  }
+  window.closeRrDetail = function(){
+    document.getElementById('rr-detail-drawer').classList.remove('show');
+    document.getElementById('rr-detail-overlay').classList.remove('show');
+  };
+  function rrRenderDetail(){
+    const titleEl = document.getElementById('rr-detail-title');
+    const bodyEl = document.getElementById('rr-detail-body');
+    const footEl = document.getElementById('rr-detail-foot');
+    if(!bodyEl) return;
+    const it = edfQueue.find(x => x.id === rrActiveId);
+    if(!it){ closeRrDetail(); return; }
+    const s = edfStatusRingkas(it);
+    titleEl.textContent = it.kind === 'offering' ? it.nama : it.penerima;
+    let body = '';
+    body += '<div class="detail-section"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">' +
+      '<div><div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:4px;">' + it.num + ' · ' + (it.kind==='offering'?'Offering Letter (OA + CS)':it.jenis) + '</div>' +
+      '<div style="font-size:14px;font-weight:700;color:var(--gray-900);">' + (it.kind==='offering' ? it.posisi : it.jenis) + '</div></div>' +
+      '<span class="status-ringkas ' + s.cls + '">' + s.text + '</span></div></div>';
+
+    if(it.kind === 'offering'){
+      body += '<div class="detail-section"><h3>Data Organisasi (OA)</h3><div class="detail-kv">' +
+        '<div><div class="k">Direktorat</div><div class="v">' + it.direktorat + '</div></div>' +
+        '<div><div class="k">Divisi</div><div class="v">' + it.divisi + '</div></div>' +
+        '<div><div class="k">Job Title</div><div class="v">' + it.jobTitle + '</div></div>' +
+        '<div><div class="k">Grade</div><div class="v">' + it.grade + '</div></div>' +
+        '<div><div class="k">Tipe Karyawan</div><div class="v">' + it.tipeKaryawan + '</div></div>' +
+        '<div><div class="k">Diajukan oleh (TA)</div><div class="v">' + it.inisiator + '</div></div>' +
+        '</div><div style="margin-top:10px;">' +
+        (it._rawSub && it._rawSub.oaDocUrl
+          ? '<a class="btn btn-outline btn-sm" href="' + it._rawSub.oaDocUrl + '" target="_blank" rel="noopener">Lihat Dokumen OA</a>'
+          : '<button class="btn btn-outline btn-sm" disabled title="Dokumen OA belum dibuat">Lihat Dokumen OA</button>') +
+        '</div></div>';
+
+      body += '<div class="detail-section"><h3>6 Tahap Baku</h3>' + renderTimeline(it) + '</div>';
+
+      if(it.timeline[2].state === 'current'){
+        body += '<div class="detail-section"><h3>Komentar CRC <span style="color:var(--red);">*</span></h3>' +
+          '<textarea id="crc-comment-input" placeholder="Wajib diisi -- catatan verifikasi data organisasi (mis. alasan tolak, atau konfirmasi data sudah sesuai)." style="width:100%;min-height:70px;border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;"></textarea></div>';
+      }
+
+      if(it.esign){
+        body += '<div class="detail-section"><h3>Riwayat Tanda Tangan Elektronik</h3><div class="detail-kv">' +
+          '<div><div class="k">Status</div><div class="v">' + it.esign.status + '</div></div>' +
+          '<div><div class="k">Ditandatangani</div><div class="v">' + it.esign.ttd + '</div></div>' +
+          '</div></div>';
+      }
+    } else {
+      body += '<div class="detail-section"><h3>Informasi Dokumen</h3><div class="detail-kv">' +
+        '<div><div class="k">Kategori</div><div class="v">' + it.kategori + '</div></div>' +
+        '<div><div class="k">Unit Organisasi</div><div class="v">' + it.unit + '</div></div>' +
+        '<div><div class="k">Inisiator</div><div class="v">' + it.inisiator + '</div></div>' +
+        '<div><div class="k">Dibuat</div><div class="v">' + it.created + '</div></div>' +
+        '<div><div class="k">Alur Approval</div><div class="v">' + ({checklist:'CRC Review', approval:'CRC Review & Approval', superadmin:'Super Admin Approval'}[it.alur]) + '</div></div>' +
+        '</div></div>';
+      if(it.checklist && it.alur === 'checklist'){
+        body += '<div class="detail-section"><h3>Checklist SOP/QC</h3>' +
+          Object.entries({dataLengkap:'Data lengkap', formatSesuai:'Format sesuai', tidakTypo:'Tidak ada typo', dataOrganisasiBenar:'Data organisasi benar'}).map(([k,label]) =>
+            '<label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px;"><input type="checkbox" ' + (it.checklist[k]?'checked':'') + ' onchange="edfToggleChecklist(\'' + it.id + '\',\'' + k + '\',this.checked)"> ' + label + '</label>'
+          ).join('') + '</div>';
+      }
+      body += '<div class="detail-section"><h3>Status Proses</h3>' + renderTimeline(it) + '</div>';
+    }
+    bodyEl.innerHTML = body;
+
+    let foot = '';
+    if(rrTab === 'review'){
+      if(it.kind === 'offering'){
+        const crcStage = it.timeline[2];
+        if(crcStage.state === 'current'){
+          foot = '<button class="btn btn-outline" onclick="edfAction(\'' + it.id + '\',\'reject\')">Tolak (Cancel)</button><button class="btn btn-primary" onclick="edfAction(\'' + it.id + '\',\'approve\')">Verifikasi Data Organisasi</button>';
+        } else {
+          foot = '<span class="muted" style="font-size:12px;align-self:center;">Menunggu tahap lain — belum ada aksi CRC di sini.</span>';
+        }
+      } else if(it.alur === 'checklist'){
+        foot = '<button class="btn btn-primary" onclick="edfAction(\'' + it.id + '\',\'reviewed\')">Tandai Direview</button>';
+      } else if(it.alur === 'approval'){
+        foot = '<button class="btn btn-outline" onclick="edfAction(\'' + it.id + '\',\'revisi\')">Diminta Revisi</button><button class="btn btn-primary" onclick="edfAction(\'' + it.id + '\',\'approve\')">Disetujui</button>';
+      } else {
+        foot = '<span class="muted" style="font-size:12px;align-self:center;">Alur Super Admin Approval.</span><button class="btn btn-primary" onclick="edfAction(\'' + it.id + '\',\'approve\')">Disetujui (PCC)</button>';
+      }
+    }
+    footEl.innerHTML = foot;
+  }
+  window.edfToggleChecklist = function(id, key, val){
+    const it = edfQueue.find(x => x.id === id);
+    if(it) it.checklist[key] = val;
+  };
+  window.edfAction = async function(id, action){
+    const it = edfQueue.find(x => x.id === id);
+    if(!it) return;
+    if(it.kind === 'offering'){
+      const sub = it._rawSub;
+      const crcName = (window.DasariaAuth && DasariaAuth.currentUser) ? DasariaAuth.currentUser.email : 'CRC';
+      const today = fmtDateShort();
+      const commentEl = document.getElementById('crc-comment-input');
+      const comment = commentEl ? commentEl.value.trim() : '';
+      if(!comment){ showToast('Komentar CRC wajib diisi sebelum verifikasi/tolak.'); return; }
+      if(action === 'reject'){
+        if(!confirm('Tolak pengajuan Offering ' + it.nama + '? Pengajuan akan berhenti total (Cancel).')) return;
+        sub.stages.reviewCRC = { status: 'ditolak', at: today, by: crcName, note: comment };
+      } else {
+        sub.stages.reviewCRC = { status: 'selesai', at: today, by: crcName, note: comment };
+      }
+      sub.updatedAt = today;
+      await updateDocument('offering_submissions', sub.id, { stages: sub.stages, updatedAt: sub.updatedAt });
+      await reloadOfferingIntoQueue();
+      showToast(action === 'reject' ? 'Pengajuan Offering ditolak (Cancel).' : 'Data organisasi (OA) terverifikasi CRC.');
+    } else {
+      const cur = it.timeline.find(t => t.state === 'current');
+      if(action === 'reviewed'){ cur.state='done'; cur.who='Tes Admin'; cur.time=fmtDateShort(); it.timeline[it.timeline.length-1].state='done'; it.timeline[it.timeline.length-1].who='Sistem'; it.timeline[it.timeline.length-1].time=fmtDateShort(); showToast('Ditandai Direview.'); }
+      else if(action === 'revisi'){ cur.state='current'; cur.who='Diminta Revisi'; showToast('Dokumen dikembalikan — Diminta Revisi.'); }
+      else { cur.state='done'; cur.who='Tes Admin'; cur.time=fmtDateShort(); it.timeline[it.timeline.length-1].state='done'; it.timeline[it.timeline.length-1].who='Sistem'; it.timeline[it.timeline.length-1].time=fmtDateShort(); showToast('Disetujui.'); }
+    }
+    rrRenderList();
+    rrRenderDetail();
+  };
+  function fmtDateShort(){ return new Date().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) + ', ' + new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}); }
+
+  // ===== DASHBOARD =====
+      function dashOpenMetric(metric){
+        openDashModal(metric);
+      }
+
+     function openDashModal(type) {
+        const modal = document.getElementById('dash-modal');
+        const title = document.getElementById('dash-modal-title');
+        const body = document.getElementById('dash-modal-body');
+        let list = [];
+        let modalTitle = '';
+        
+        // Ambil jumlah angka yang tertera di kartu depan
+        const kpiId = type === 'persetujuan' ? 'approval' : type === 'revisi' ? 'revisi' : type === 'kedaluwarsa' ? 'expired' : 'aktif';
+        const kpiVal = parseInt(document.getElementById('kpi-' + kpiId).textContent) || 0;
+
+        // 1. Tentukan Judul dan Tarik Data Asli
+        if (type === 'persetujuan') {
+          modalTitle = 'Menunggu Persetujuan Saya';
+          list = edfQueue.filter(it => it.kind === 'offering' && !(edfIsDone(it) || edfIsCancelled(it)));
+          // Jika data asli kosong, buat 1 data dummy pancingan
+          if (list.length === 0 && kpiVal > 0) {
+            list = [{ id: 'dummy-apv', kind: 'offering', nama: 'Andi Saputra', posisi: 'Business Analyst', jenis: 'Offering', created: 'Hari ini', timeline: [{}, {}, {state: 'current'}, {}, {}] }];
+          }
+        } else if (type === 'revisi') {
+          modalTitle = 'Perlu Saya Revisi';
+          list = edfQueue.filter(it => it.kind === 'batch' && it.alur === 'checklist' && it.timeline.some(t => t.state === 'current'));
+          if (list.length === 0 && kpiVal > 0) {
+            list = [{ id: 'dummy-rev', kind: 'batch', penerima: 'PKS Vendor IT', jenis: 'PKMT', created: 'Kemarin', timeline: [{state: 'current', stage: 'Diminta Revisi'}] }];
+          }
+        } else if (type === 'kedaluwarsa') {
+          modalTitle = 'Dokumen Segera Kedaluwarsa';
+          // Paksa data dummy untuk kedaluwarsa
+          list = [{ id: 'dummy-exp', kind: 'batch', penerima: 'SOP Keamanan Data', jenis: 'SOP', created: '10 Okt 2026', timeline: [{state:'current', stage:'Kedaluwarsa'}] }]; 
+        } else if (type === 'aktif') {
+          modalTitle = 'Dokumen Aktif / Selesai';
+          list = edfQueue.filter(it => edfIsDone(it));
+          if (list.length === 0 && kpiVal > 0) {
+            list = [{ id: 'dummy-akt', kind: 'batch', penerima: 'Kontrak PKWT', jenis: 'PKWT', created: 'Bulan lalu', timeline: [{state: 'done', stage: 'Selesai'}] }];
+          }
+        }
+
+        title.textContent = modalTitle;
+        
+        // 2. Batasi maksimal 10 agar tabel tidak kepanjangan
+        const displayLimit = Math.min(kpiVal, 10);
+        
+        // 3. Gandakan data dummy jika jumlahnya kurang dari angka di kartu (Misal kartu = 3, maka duplikasi jadi 3)
+        while (list.length > 0 && list.length < displayLimit) {
+            list.push({...list[0], id: list[0].id + '-' + list.length});
+        }
+        
+        // Potong list sesuai displayLimit
+        const displayList = list.slice(0, displayLimit);
+
+        // 4. Render ke HTML
+        if (displayList.length === 0) {
+          body.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><svg viewBox="0 0 24 24" width="40" height="40" stroke="var(--gray-300)" fill="none" stroke-width="1.5" style="margin-bottom:12px;"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg><div class="es-title" style="font-size:13.5px;font-weight:700;color:var(--gray-600);margin-bottom:4px;">Tidak ada dokumen</div><div class="es-desc" style="font-size:12.5px;color:var(--gray-400);">Belum ada data untuk kategori ini.</div></div>';
+        } else {
+          let rowsHtml = displayList.map((item, index) => {
+            const s = type === 'kedaluwarsa' ? {cls: 'cancel', text: 'Segera Kedaluwarsa'} : edfStatusRingkas(item);
+            const subject = item.kind === 'offering' ? (item.nama + ' — ' + item.posisi) : ((item.penerima || item.nama) + ' — ' + item.jenis);
+            const tipe = item.kind === 'offering' ? 'Offering' : item.jenis;
+            const tanggal = item.created || '-';
+            
+            let clickAction = '';
+            if (type === 'persetujuan' || type === 'revisi') {
+              clickAction = `closeDashModal(); goPage('reviewriwayat', document.querySelector('.menu-item[data-page=reviewriwayat]')); rrSelectItem('${item.id}');`;
+            } else if (type === 'aktif' || type === 'kedaluwarsa') {
+              clickAction = `closeDashModal(); goPage('repository', document.querySelector('.menu-item[data-page=repository]'));`;
+            }
+
+            return `<tr onclick="${clickAction}" style="cursor:pointer;">
+              <td>${index + 1}</td>
+              <td class="req-subject">${subject}</td>
+              <td><span class="chip ${item.kind==='offering'?'chip-blue':'chip-purple'}"><i></i>${tipe}</span></td>
+              <td class="muted">${tanggal}</td>
+              <td><span class="status-ringkas ${s.cls}">${s.text}</span></td>
+            </tr>`;
+          }).join('');
+
+          let extraInfo = kpiVal > 10 ? `<div style="text-align:center; padding: 10px; font-size: 12px; color: var(--gray-500); background: var(--gray-50); border-top: 1px solid var(--gray-200);">Menampilkan 10 dari ${kpiVal} dokumen. Buka menu terkait untuk melihat selengkapnya.</div>` : '';
+
+          body.innerHTML = `<div class="table-wrap">
+            <table style="margin: 0; width: 100%;">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Subjek Dokumen</th>
+                  <th>Tipe</th>
+                  <th>Tanggal</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>${extraInfo}`;
+        }
+
+        modal.style.display = 'flex';
+      }
+
+    function closeDashModal(){document.getElementById('dash-modal').style.display='none';}
+
+function renderDashboard(){
+      const filterEl = document.getElementById('dash-filter-bulan');
+      const filterVal = filterEl ? filterEl.value : 'all';
+
+      // 1. Hitung Angka Dokumen Aktif (Kotak Hijau)
+      const realAktif = edfQueue.filter(it => edfIsDone(it));
+      let aktifCount = 0;
+      const monthMap = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'Mei':'05', 'Jun':'06', 'Jul':'07', 'Ags':'08', 'Sep':'09', 'Okt':'10', 'Nov':'11', 'Des':'12'};
+      
+      if (filterVal === 'all') {
+        aktifCount = realAktif.length > 25 ? realAktif.length : 43; 
+      } else {
+        const filteredAktif = realAktif.filter(it => {
+          if (!it.created) return false;
+          const parts = it.created.split(' ');
+          if(parts.length >= 3) {
+            const m = monthMap[parts[1]];
+            const y = parts[2].replace(',', '');
+            return `${y}-${m}` === filterVal;
+          }
+          return false;
+        });
+        aktifCount = filteredAktif.length;
+        if (aktifCount < 2) {
+          const mNum = parseInt(filterVal.split('-')[1]);
+          aktifCount = (mNum % 6) + 3; 
+        }
+      }
+
+      // 2. Render Angka ke dalam Kartu (KPI)
+      document.getElementById('kpi-aktif').textContent = aktifCount;
+      if(filterEl) {
+        document.getElementById('kpi-aktif-period').textContent = filterVal === 'all' ? 'Total keseluruhan dokumen' : 'Dokumen aktif di ' + filterEl.options[filterEl.selectedIndex].text;
+      }
+
+      // SET ANGKA DUMMY UNTUK KOTAK LAIN AGAR TIDAK 0
+      const dummyApprovalCount = filterVal === '2026-09' ? 3 : (Math.floor(Math.random() * 3) + 1);
+      const dummyRevisiCount = filterVal === '2026-09' ? 1 : (Math.floor(Math.random() * 2) + 1);
+      const dummyExpiredCount = 2; // Sesuai permintaan, default 2
+
+      document.getElementById('kpi-approval').textContent = dummyApprovalCount;
+      document.getElementById('kpi-revisi').textContent = dummyRevisiCount;
+      document.getElementById('kpi-expired').textContent = dummyExpiredCount;
+
+      // 3. Render Tabel Bawah "Perlu Ditindaklanjuti"
+      const active = edfQueue.filter(it => !(edfIsDone(it) || edfIsCancelled(it)));
+      document.getElementById('dash-tbody').innerHTML = active.map((it, i) => {
+        const s = edfStatusRingkas(it);
+        const subject = it.kind === 'offering' ? (it.nama + ' — ' + it.posisi) : (it.penerima + ' — ' + it.jenis);
+        return '<tr style="cursor:pointer;" onclick="goPage(\'reviewriwayat\', document.querySelector(\'.menu-item[data-page=reviewriwayat]\'));rrSelectItem(\'' + it.id + '\')"><td>' + (i+1) + '</td><td class="req-subject">' + subject + '</td><td><span class="chip ' + (it.kind==='offering'?'chip-blue':'chip-purple') + '"><i></i>' + (it.kind==='offering'?'Offering':it.jenis) + '</span></td><td class="muted">' + it.created + '</td><td><span class="status-ringkas ' + s.cls + '">' + s.text + '</span></td></tr>';
+      }).join('');
+      
+      // 4. Widget Aktivitas Terbaru
+      document.getElementById('dash-activity').innerHTML =
+        '<div><b style="color:var(--gray-800);">Tes Admin</b> menyetujui data organisasi <span class="muted">OFF-2026-0198 — Galih Ramadhan</span><div class="muted" style="font-size:11px;margin-top:2px;">1 hari lalu</div></div>' +
+        '<div><b style="color:var(--gray-800);">ComBen</b> merinci CS <span class="muted">OFF-2026-0231 — Rina Asyifa</span><div class="muted" style="font-size:11px;margin-top:2px;">2 hari lalu</div></div>' +
+        '<div><b style="color:var(--gray-800);">Sistem</b> generate 4 dokumen batch <span class="muted">DOC-2026-0512 — PKWT</span><div class="muted" style="font-size:11px;margin-top:2px;">3 hari lalu</div></div>' +
+        '<div><b style="color:var(--gray-800);">Tes Admin</b> menolak (Cancel) <span class="muted">OFF-2026-0187 — Hesti Purnama</span><div class="muted" style="font-size:11px;margin-top:2px;">12 hari lalu</div></div>';
+    }
+
+let pinnedDocs = [
+  { id: 1, name: 'Template PKWT', category: 'Kontrak Kerja' },
+  { id: 2, name: 'Offering Letter', category: 'Rekrutmen' },
+  { id: 3, name: 'PKS Kemitraan', category: 'Kemitraan' }
+];
+
+function renderPinnedDocs() {
+  const container = document.getElementById('dash-shortcuts');
+  if (!container) return;
+
+  if (pinnedDocs.length === 0) {
+    container.innerHTML = '<div class="muted" style="padding:10px 0; text-align:center;">Belum ada pintasan. Klik "+ Tambah" untuk menyematkan.</div>';
+    return;
+  }
+
+  container.innerHTML = pinnedDocs.map((doc, index) => {
+    const isLast = index === pinnedDocs.length - 1;
+    const borderStyle = isLast ? '' : 'border-bottom:1px solid var(--gray-100);';
+    
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;${borderStyle}">
+        <span>
+          <b style="cursor:pointer; color:var(--gray-900); text-decoration:none; transition:color 0.2s ease;" 
+             onmouseover="this.style.color='var(--primary)'; this.style.textDecoration='underline';" 
+             onmouseout="this.style.color='var(--gray-900)'; this.style.textDecoration='none';"
+             onclick="showToast('Membuka dokumen: ${doc.name}...'); goPage('repository', document.querySelector('.menu-item[data-page=repository]'));">
+            ${doc.name}
+          </b><br>
+          <span class="muted">${doc.category}</span>
+        </span>
+        <button class="btn btn-danger btn-sm" onclick="unpinDoc(${doc.id})">Unpin</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function addPinnedDoc() {
+  const newId = Date.now();
+  pinnedDocs.push({
+    id: newId,
+    name: 'Dokumen Penting ' + Math.floor(Math.random() * 100),
+    category: 'Administrasi Umum'
+  });
+  
+  renderPinnedDocs();
+  showToast('Berhasil menyematkan dokumen baru!');
+}
+
+function unpinDoc(id) {
+  pinnedDocs = pinnedDocs.filter(doc => doc.id !== id);
+  renderPinnedDocs();
+  showToast('Dokumen dilepas dari pintasan.');
+}
+
+  const defaultApprovalMatrix = () => ({ crc:true, comben:false, combenMode:'parallel', hc:false, esign:false, esignSignerField:'', esignOtpField:'' });
+  const PLACEHOLDER_JENIS = () => ({ status:'Draft', namaTemplate:'-', docCode:'-', versi:'-', deskripsi:'Data placeholder — menunggu detail asli dari client.', googleDocId:'', dibuatOleh:'-', diperbaruiOleh:'-', terakhirDiperbarui:'-', org:null, placeholders:[], versions:[], approvalMatrix:defaultApprovalMatrix(), approvalFlow:[], signatureFields:[] });
+
+  const MT_APPROVAL_ACTIONS = [
+    { id:'create', label:'Create — Buat Dokumen' },
+    { id:'review', label:'Review' },
+    { id:'verify', label:'Verify — Verifikasi' },
+    { id:'approve', label:'Approve — Menyetujui' },
+    { id:'sign', label:'Sign — Tanda Tangan' },
+    { id:'paraf', label:'Paraf' },
+    { id:'acknowledge', label:'Acknowledge — Diketahui/Otomatis' }
+  ];
+  function mtActionLabel_(id){ var a = MT_APPROVAL_ACTIONS.find(function(x){ return x.id === id; }); return a ? a.label : id; }
+  const MT_ACTION_DEFAULT_SIG_TYPE = { sign:'tandaTangan', approve:'tandaTangan', create:'paraf', review:'paraf', verify:'paraf', paraf:'paraf', acknowledge:'paraf' };
+  const MT_OFFERING_KODE_SET = ['OFFER/OA', 'OFFER/CS', 'OFFER/FINAL'];
+  function mtNewApprovalLayer_(overrides){
+    return Object.assign({ id:'af_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6), order:1, label:'Tahap Baru', role:'', actorSource:'', action:'review', required:true, parallelWithPrevious:false }, overrides || {});
+  }
+  function migrateApprovalMatrixToFlow_(j){
+    if(Array.isArray(j.approvalFlow) && j.approvalFlow.length) return j.approvalFlow;
+    var am = j.approvalMatrix || defaultApprovalMatrix();
+    var flow = [];
+    flow.push(mtNewApprovalLayer_({ id:'af_crc', order:1, label:'CRC Review', role:'CRC', actorSource:'Staff CRC yang ditugaskan', action:'verify' }));
+    if(am.comben) flow.push(mtNewApprovalLayer_({ id:'af_comben', order:flow.length+1, label:'ComBen Detailing', role:'ComBen', actorSource:'Staff ComBen direktorat terkait', action:'review', parallelWithPrevious: am.combenMode==='parallel' }));
+    if(am.hc) flow.push(mtNewApprovalLayer_({ id:'af_hc', order:flow.length+1, label:'HC Approval', role:'HC', actorSource:'HC (di-scope ke direktoratnya sendiri)', action:'approve' }));
+    if(am.esign) flow.push(mtNewApprovalLayer_({ id:'af_esign', order:flow.length+1, label:'Tanda Tangan Eksternal', role: am.esignSignerField || 'Eksternal', actorSource:'Pihak eksternal (kandidat/mitra)', action:'sign' }));
+    j.approvalFlow = flow;
+    return flow;
+  }
+  function mtOfferingWorkedExampleFlow_(){
+    return [
+      { id:'af_submitTA', order:1, label:'Submit - TA', role:'TA', actorSource:'TA pemilik pengajuan', action:'create', required:true, parallelWithPrevious:false },
+      { id:'af_reviewComBen', order:2, label:'Review - ComBen', role:'ComBen', actorSource:'Staff ComBen direktorat terkait', action:'review', required:true, parallelWithPrevious:false },
+      { id:'af_reviewCRC', order:2, label:'Review - CRC', role:'CRC', actorSource:'Staff CRC yang ditugaskan', action:'verify', required:true, parallelWithPrevious:true },
+      { id:'af_approvalHC', order:3, label:'Approval by HC x PCC', role:'HC x PCC', actorSource:'HC (di-scope direktorat) x PCC', action:'approve', required:true, parallelWithPrevious:false },
+      { id:'af_approvalKandidat', order:4, label:'Approval by Kandidat', role:'Kandidat', actorSource:'Kandidat (link tanda tangan, tanpa verifikasi OTP sejak 1 Sep 2026)', action:'sign', required:true, parallelWithPrevious:false },
+      { id:'af_complete', order:5, label:'Complete', role:'Sistem', actorSource:'Otomatis oleh sistem', action:'acknowledge', required:true, parallelWithPrevious:false }
+    ];
+  }
+  function mtEsc_(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function mtLooksExternal_(text){
+    var t = (text||'').toLowerCase();
+    return t.indexOf('kandidat') !== -1 || t.indexOf('mitra') !== -1 || t.indexOf('eksternal') !== -1;
+  }
+  function mtGenSignatureMarker_(j, seedText){
+    var base = 'TTD_' + String(seedText || 'FIELD').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    var existing = (j.signatureFields || []).map(function(f){ return f.marker; });
+    var marker = '{{' + base + '}}';
+    var n = 2;
+    while(existing.indexOf(marker) !== -1){ marker = '{{' + base + '_' + n + '}}'; n++; }
+    return marker;
+  }
+  const MT_CATEGORY_ORDER = [
+    { id:'rekrutmen', nama:'Rekrutmen' },
+    { id:'kontrak', nama:'Kontrak & Perjanjian Karyawan' },
+    { id:'kemitraan', nama:'Kemitraan' },
+    { id:'administrasi', nama:'Administrasi Umum' },
+    { id:'disposisi', nama:'Disposisi' }
+  ];
+  const seedMtCategoriesLegacy_ = [
+    { id:'rekrutmen', nama:'Rekrutmen', jenis:[
+      Object.assign({ kode:'OFFER/OA', nama:'Offering Letter Kandidat — Organizational Assignment' }, {
+        status:'Draft', namaTemplate:'OFFERING LETTER_ORGANIZATIONAL ASSIGNMENT_FILE MASTER', docCode:'OFFER-OA-TPL-001', versi:'1', deskripsi:'',
+        googleDocId:'', dibuatOleh:'andikha6@gmail.com', diperbaruiOleh:'andikha6@gmail.com', terakhirDiperbarui:'-',
+        org:{ direktorat:'People Corporate Compliance', divisi:'Corporate Regulatory Compliance', departemen:'' },
+        placeholders:[
+          {key:'NAMA_KANDIDAT',label:'Nama Kandidat',tipe:'text',wajib:true,shared:true,urutan:1,halaman:null},
+          {key:'DIREKTORAT',label:'Direktorat',tipe:'text',wajib:true,shared:true,urutan:2,halaman:null},
+          {key:'JOB_TITLE',label:'Job Title',tipe:'text',wajib:true,shared:true,urutan:3,halaman:null},
+          {key:'GRADE',label:'Grade',tipe:'text',wajib:false,shared:false,urutan:4,halaman:null}
+        ],
+        versions:[],
+        approvalMatrix:{ crc:true, comben:true, combenMode:'parallel', hc:true, esign:true, esignSignerField:'NAMA_KANDIDAT', esignOtpField:'Email kandidat (dari data Rekrutmen)' },
+        approvalFlow: mtOfferingWorkedExampleFlow_()
+      }),
+      Object.assign({ kode:'OFFER/CS', nama:'Offering Letter Kandidat — Compensation Statement' }, {
+        status:'Draft', namaTemplate:'OFFERING LETTER_COMPENSATION STATEMENT_FILE MASTER', docCode:'OFFER-CS-TPL-001', versi:'1', deskripsi:'',
+        googleDocId:'', dibuatOleh:'andikha6@gmail.com', diperbaruiOleh:'andikha6@gmail.com', terakhirDiperbarui:'-',
+        org:{ direktorat:'People Corporate Compliance', divisi:'Corporate Regulatory Compliance', departemen:'' },
+        placeholders:[
+          {key:'NAMA_KANDIDAT',label:'Nama Kandidat',tipe:'text',wajib:true,shared:true,urutan:1,halaman:null},
+          {key:'TOTAL_THP_DEAL',label:'Total THP Deal',tipe:'number',wajib:true,shared:true,urutan:2,halaman:null},
+          {key:'JENIS_PAYROLL',label:'Jenis Payroll',tipe:'text',wajib:true,shared:true,urutan:3,halaman:null},
+          {key:'GAJI_POKOK',label:'Gaji Pokok',tipe:'number',wajib:true,shared:false,urutan:4,halaman:null},
+          {key:'TUNJANGAN_TETAP',label:'Tunjangan Tetap',tipe:'number',wajib:false,shared:false,urutan:5,halaman:null},
+          {key:'TUNJANGAN_TIDAK_TETAP',label:'Tunjangan Tidak Tetap',tipe:'number',wajib:false,shared:false,urutan:6,halaman:null}
+        ],
+        versions:[],
+        approvalMatrix:{ crc:true, comben:true, combenMode:'parallel', hc:true, esign:true, esignSignerField:'Nama Kandidat (sama seperti Paket OA)', esignOtpField:'Email kandidat (dari data Rekrutmen)' },
+        approvalFlow: mtOfferingWorkedExampleFlow_()
+      })
+    ]},
+    { id:'kontrak', nama:'Kontrak & Perjanjian Karyawan', jenis:[
+      Object.assign({ kode:'PKWT', nama:'PKWT' }, { status:'Draft', namaTemplate:'PKWT — (MASTER)', docCode:'PKWT-PKWT-TPL-001', versi:'1.0', deskripsi:'Perjanjian Kerja Waktu Tertentu.', googleDocId:'', dibuatOleh:'-', diperbaruiOleh:'-', terakhirDiperbarui:'-', org:null,
+        placeholders:[{key:'NAMA_KARYAWAN',label:'Nama Karyawan',tipe:'text',wajib:true,urutan:1,halaman:null},{key:'NIP',label:'NIP',tipe:'text',wajib:true,urutan:2,halaman:null},{key:'TANGGAL_MULAI',label:'Tanggal Mulai',tipe:'date',wajib:true,urutan:3,halaman:null},{key:'TANGGAL_BERAKHIR',label:'Tanggal Berakhir',tipe:'date',wajib:true,urutan:4,halaman:null}], versions:[],
+        approvalMatrix:{ crc:true, comben:true, combenMode:'parallel', hc:true, esign:false, esignSignerField:'', esignOtpField:'' } }),
+      Object.assign({ kode:'PKWTT', nama:'PKWTT' }, { status:'Draft', namaTemplate:'PKWTT — (MASTER)', docCode:'PKWTT-PKWTT-TPL-001', versi:'1.0', deskripsi:'Perjanjian Kerja Waktu Tidak Tertentu.', googleDocId:'', dibuatOleh:'-', diperbaruiOleh:'-', terakhirDiperbarui:'-', org:null,
+        placeholders:[{key:'NAMA_KARYAWAN',label:'Nama Karyawan',tipe:'text',wajib:true,urutan:1,halaman:null},{key:'NIP',label:'NIP',tipe:'text',wajib:true,urutan:2,halaman:null},{key:'TANGGAL_MULAI',label:'Tanggal Mulai',tipe:'date',wajib:true,urutan:3,halaman:null}], versions:[],
+        approvalMatrix:{ crc:true, comben:true, combenMode:'parallel', hc:true, esign:false, esignSignerField:'', esignOtpField:'' } }),
+      Object.assign({ kode:'DOK3', nama:'Jenis Dokumen Baru 3' }, PLACEHOLDER_JENIS()),
+      Object.assign({ kode:'DOK4', nama:'Jenis Dokumen Baru 4' }, PLACEHOLDER_JENIS()),
+      Object.assign({ kode:'DOK5', nama:'Jenis Dokumen Baru 5' }, PLACEHOLDER_JENIS())
+    ]},
+    { id:'kemitraan', nama:'Kemitraan', jenis:[
+      Object.assign({ kode:'MTIN', nama:'Informed Consent Kemitraan' }, PLACEHOLDER_JENIS(), { status:'Published' }),
+      Object.assign({ kode:'PBKR', nama:'PB - Komitmen Kinerja - (M...)' }, PLACEHOLDER_JENIS(), { status:'Published' }),
+      Object.assign({ kode:'PKMT', nama:'PKS Kemitraan' }, {
+        status:'Published', namaTemplate:'Copy of PB - Komitmen Kinerja - (MASTER)', docCode:'PKMT-PKMT-TPL-001', versi:'1.5', deskripsi:'',
+        googleDocId:'159eO8LhdCbbFpcCzWffsNe8yPbcRnBG8AYrNrb', dibuatOleh:'corporate.regulatory.compliance@dasaria.id', diperbaruiOleh:'corporate.regulatory.compliance@dasaria.id', terakhirDiperbarui:'21 Agu 2026',
+        org:{ direktorat:'People Corporate Compliance', divisi:'Corporate Regulatory Compliance', departemen:'Corporate Legal Strategic' },
+        placeholders:[
+          {key:'NAMA',label:'Nama',tipe:'text',wajib:null,urutan:1,halaman:null},
+          {key:'JENIS_KELAMIN',label:'Jenis Kelamin',tipe:'text',wajib:null,urutan:2,halaman:null},
+          {key:'TEMPAT_DAN_TANGGAL_LAHIR',label:'Tempat dan Tanggal Lahir',tipe:'text',wajib:null,urutan:3,halaman:null},
+          {key:'NO_KTP',label:'No. KTP',tipe:'text',wajib:null,urutan:4,halaman:null},
+          {key:'ALAMAT_KTP',label:'Alamat KTP',tipe:'text',wajib:null,urutan:5,halaman:null},
+          {key:'ALAMAT_DOMISILI',label:'Alamat Domisili',tipe:'text',wajib:null,urutan:6,halaman:null}
+        ],
+        versions:[{versi:'1.5', templateFileId:'159eO8LhdCbbFpcCzWffsNe8yPbcRnBG8AYrNrb', by:'corporate.regulatory.compliance@dasaria.id', tgl:'21 Agu 2026', status:'Published', aksi:'Publish'},{versi:'1.4', templateFileId:'', by:'corporate.regulatory.compliance@dasaria.id', tgl:'2 Jul 2026', status:'Diarsipkan', aksi:'Publish'}],
+        approvalMatrix:{ crc:true, comben:false, combenMode:'parallel', hc:false, esign:true, esignSignerField:'NAMA', esignOtpField:'Email/kontak mitra (diisi manual saat pengajuan)' }
+      })
+    ]},
+    { id:'administrasi', nama:'Administrasi Umum', jenis:[
+      Object.assign({ kode:'DOK6', nama:'Jenis Dokumen Baru 6' }, PLACEHOLDER_JENIS()),
+      Object.assign({ kode:'DOK7', nama:'Jenis Dokumen Baru 7' }, PLACEHOLDER_JENIS())
+    ]},
+    { id:'disposisi', nama:'Disposisi', jenis:[
+      Object.assign({ kode:'DOK8', nama:'Jenis Dokumen Baru 8' }, PLACEHOLDER_JENIS()),
+      Object.assign({ kode:'DOK9', nama:'Jenis Dokumen Baru 9' }, PLACEHOLDER_JENIS())
+    ]}
+  ];
+  seedMtCategoriesLegacy_[0].jenis.push(Object.assign({ kode:'OFFER/FINAL', nama:'Offering Letter Kandidat — Dokumen Final (Gabungan OA+CS)' }, {
+    status:'Draft', namaTemplate:'OFFERING LETTER_FINAL GABUNGAN_FILE MASTER', docCode:'OFFER-FINAL-TPL-001', versi:'1', deskripsi:'Digenerate otomatis saat Persetujuan Offering di-Approve -- inilah dokumen yang dikirim TA ke kandidat.',
+    googleDocId:'', dibuatOleh:'-', diperbaruiOleh:'-', terakhirDiperbarui:'-',
+    org:{ direktorat:'People Corporate Compliance', divisi:'Corporate Regulatory Compliance', departemen:'' },
+    placeholders:[
+      {key:'NAMA_KANDIDAT',label:'Nama Kandidat',tipe:'text',wajib:true,urutan:1,halaman:null},
+      {key:'DIREKTORAT',label:'Direktorat',tipe:'text',wajib:true,urutan:2,halaman:null},
+      {key:'JOB_TITLE',label:'Job Title',tipe:'text',wajib:true,urutan:3,halaman:null},
+      {key:'TOTAL_THP_DEAL',label:'Total THP Deal',tipe:'text',wajib:true,urutan:4,halaman:null},
+      {key:'TANDA_TANGAN_KANDIDAT',label:'Tanda Tangan Kandidat (nama diketik ATAU gambar coretan disisipkan di sini)',tipe:'text',wajib:true,urutan:5,halaman:null},
+      {key:'TANGGAL_TANDA_TANGAN',label:'Tanggal Tanda Tangan',tipe:'date',wajib:true,urutan:6,halaman:null}
+    ],
+    versions:[],
+    approvalMatrix:{ crc:false, comben:false, combenMode:'parallel', hc:false, esign:true, esignSignerField:'TANDA_TANGAN_KANDIDAT', esignOtpField:'Email kandidat (dari data Rekrutmen)' },
+    approvalFlow: mtOfferingWorkedExampleFlow_(),
+    signatureFields:[]
+  }));
+  var seedDocumentTemplates = seedMtCategoriesLegacy_.reduce(function(acc, kat){
+    return acc.concat(kat.jenis.map(function(j){ return Object.assign({ kategoriId: kat.id }, j); }));
+  }, []);
+  function mtDocId_(j){ return j.kode.replace(/\//g, '_'); }
+  function buildMtCategoriesFromTemplates_(templates){
+    return MT_CATEGORY_ORDER.map(function(k){
+      return Object.assign({}, k, { jenis: templates.filter(function(t){ return t.kategoriId === k.id; }) });
+    });
+  }
+  async function mtPersist_(j){
+    try {
+      await updateDocument('document_templates', mtDocId_(j), {
+        kategoriId: mtActiveKatId, kode: j.kode, nama: j.nama, status: j.status,
+        namaTemplate: j.namaTemplate, docCode: j.docCode, versi: j.versi, deskripsi: j.deskripsi,
+        googleDocId: j.googleDocId, dibuatOleh: j.dibuatOleh, diperbaruiOleh: j.diperbaruiOleh,
+        terakhirDiperbarui: j.terakhirDiperbarui, org: j.org, placeholders: j.placeholders,
+        versions: j.versions, approvalMatrix: j.approvalMatrix, approvalFlow: j.approvalFlow || [], signatureFields: j.signatureFields || []
+      });
+    } catch (e) {
+      showToast('Tersimpan di layar, TAPI gagal disinkronkan ke database: ' + e.message);
+    }
+  }
+  let mtCategories = [];
+  const CURRENT_USER_EMAIL = 'corporate.regulatory.compliance@dasaria.id';
+
+  var OFFERING_SERVICES_URL = 'https://script.google.com/macros/s/AKfycbwvKpgje4Q4IRmA-yxgXo8nw-0E7KtGowuiAOrD7c_erQfFRn2qYutd3fVQmwJ6s6bVcg/exec';
+  function offeringServicesConfigured(){
+    return !!OFFERING_SERVICES_URL && OFFERING_SERVICES_URL.indexOf('PASTE_') !== 0;
+  }
+  async function mtGetIdToken_(){
+    return (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser)
+      ? await firebase.auth().currentUser.getIdToken() : null;
+  }
+  async function mtCallOfferingServices_(action, extra){
+    if(!offeringServicesConfigured()) return { ok:false, error:'Layanan Apps Script belum dikonfigurasi (OFFERING_SERVICES_URL kosong) — hubungi admin.' };
+    var idToken = await mtGetIdToken_();
+    var payload = Object.assign({ action:action, idToken:idToken }, extra || {});
+    try {
+      var res = await fetch(OFFERING_SERVICES_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      return await res.json();
+    } catch(e){
+      return { ok:false, error:'Gagal menghubungi layanan Apps Script. Periksa koneksi internet Anda atau hubungi admin.' };
+    }
+  }
+
+  function extractGoogleDocId_(input){
+    var s = String(input || '').trim();
+    if(!s) return '';
+    var m = s.match(/\/d\/([a-zA-Z0-9_-]{15,})/) || s.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
+    if(m) return m[1];
+    m = s.match(/^([a-zA-Z0-9_-]{15,})/);
+    return m ? m[1] : s;
+  }
+  function upsertMasterTemplateRow_(j, fields, statusOverride){
+    fields = fields || {};
+    var rawId = (fields.templateFileId !== undefined) ? fields.templateFileId : j.googleDocId;
+    j.googleDocId = extractGoogleDocId_(rawId);
+    j.docCode = j.docCode || (j.kode.replace('/', '-') + '-TPL-001');
+    if(fields.deskripsi !== undefined) j.deskripsi = fields.deskripsi;
+    if(fields.versi !== undefined) j.versi = fields.versi;
+    else if(!j.versi) j.versi = '1.0';
+    j.status = statusOverride;
+    j.diperbaruiOleh = CURRENT_USER_EMAIL;
+    j.terakhirDiperbarui = fmtDateShort();
+    return j;
+  }
+  function appendVersionHistory_(j, versi, templateFileId, status, aksi){
+    j.versions = j.versions || [];
+    j.versions.unshift({ versi:versi, templateFileId:templateFileId, by:CURRENT_USER_EMAIL, tgl:fmtDateShort(), status:status, aksi:aksi });
+  }
+  function bumpVersi_(v){
+    var s = String(v || '0');
+    if(s.indexOf('.') === -1) return String((parseInt(s, 10) || 0) + 1);
+    return (Math.round((parseFloat(s) + 0.1) * 10) / 10).toFixed(1);
+  }
+  let mtActiveKatId = 'rekrutmen';
+  let mtActiveJenisIdx = null;
+  let mtOrgEditMode = false;
+  let mtActiveDetailTab = 'mtd-basic';
+  function activeMtKategori(){ return mtCategories.find(k => k.id === mtActiveKatId); }
+  function activeMtJenis(){ if(mtActiveJenisIdx === null) return null; return activeMtKategori().jenis[mtActiveJenisIdx]; }
+  function renderMtKategoriList(){
+    document.getElementById('mt-kategori-list').innerHTML = mtCategories.map(k =>
+      '<div class="mt-kategori-item ' + (k.id===mtActiveKatId?'active':'') + '" onclick="mtSelectKategori(\'' + k.id + '\')">' +
+        '<div><div class="t">' + k.nama + '</div><div class="s">' + k.jenis.length + ' jenis dokumen</div></div>' +
+        '<div class="row-actions">' +
+        '<button class="mt-icon-btn" onclick="event.stopPropagation();showToast(\'Edit kategori — ganti nama.\')" title="Edit"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>' +
+        '<button class="mt-icon-btn" onclick="event.stopPropagation();showToast(\'Hapus kategori diblokir — masih punya jenis dokumen di dalamnya.\')" title="Hapus"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+  }
+  window.mtSelectKategori = function(id){
+    mtActiveKatId = id;
+    mtActiveJenisIdx = null;
+    mtOrgEditMode = false;
+    mtActiveDetailTab = 'mtd-basic';
+    renderMtKategoriList();
+    renderMtJenisList();
+    renderMtDetail();
+  };
+  function renderMtJenisList(){
+    const kat = activeMtKategori();
+    document.getElementById('mt-jenis-head').textContent = 'Jenis Dokumen — ' + kat.nama;
+    document.getElementById('mt-jenis-list').innerHTML = kat.jenis.map((j, ji) =>
+      '<div class="mt-jenis-item ' + (ji===mtActiveJenisIdx?'active':'') + '" onclick="mtSelectJenis(' + ji + ')">' +
+        '<div><div class="t">' + j.nama + '</div><div class="s">' + j.kode + '</div></div>' +
+        '<span class="chip ' + (j.status==='Published'?'chip-green':'chip-gray') + '" style="font-size:10px;padding:2px 7px;"><i></i>' + j.status + '</span>' +
+      '</div>'
+    ).join('') || '<div class="muted" style="font-size:12px;padding:8px;">Belum ada jenis dokumen.</div>';
+  }
+  window.mtSelectJenis = function(ji){
+    mtActiveJenisIdx = ji;
+    mtOrgEditMode = false;
+    mtActiveDetailTab = 'mtd-basic';
+    renderMtJenisList();
+    renderMtDetail();
+  };
+  function renderMtDetail(){
+    const detail = document.getElementById('mt-detail');
+    const j = activeMtJenis();
+    if(!j){
+      detail.innerHTML = '<div class="mt-empty"><svg viewBox="0 0 24 24" width="34" height="34" stroke="var(--gray-300)" fill="none" stroke-width="1.5" style="margin-bottom:10px;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><div style="font-size:13px;font-weight:600;color:var(--gray-500);">Pilih Jenis Dokumen di sebelah kiri untuk mulai mengelola template</div></div>';
+      return;
+    }
+    const kat = activeMtKategori();
+    const canWrite = true;
+    let html = '<div class="mt-detail-head"><div><div class="crumb">' + kat.nama + '</div><h1>' + j.nama + ' (' + j.kode + ')</h1></div>' +
+      (canWrite ? '<button class="mt-link-danger" onclick="showToast(\'Hapus jenis dokumen — diblokir kalau template sudah dipakai di data pengajuan nyata.\')">Hapus Jenis Dokumen</button>' : '') +
+      '</div>';
+
+    html += '<div class="mt-org-box"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+      '<div class="lbl">Organisasi Pemilik / Pengguna</div>' +
+      (canWrite ? '<button class="mt-link" onclick="mtToggleOrgEdit()">' + (mtOrgEditMode?'Batal':'Edit') + '</button>' : '') +
+      '</div>';
+    if(mtOrgEditMode){
+      const o = j.org || { direktorat:'', divisi:'', departemen:'' };
+      const direktoratOptions = ['People Corporate Compliance','Direktorat Komersial','Direktorat HC / Finance & Corporate','Direktorat Teknologi & Jaringan'];
+      html += '<div class="form-grid" style="margin-top:10px;">' +
+        '<div class="form-field"><label>Direktorat</label><select id="mt-org-direktorat"><option value="">-</option>' + direktoratOptions.map(d => '<option ' + (o.direktorat===d?'selected':'') + '>' + d + '</option>').join('') + '</select></div>' +
+        '<div class="form-field"><label>Divisi</label><input type="text" id="mt-org-divisi" value="' + (o.divisi||'') + '"></div>' +
+        '<div class="form-field"><label>Departemen</label><input type="text" id="mt-org-departemen" value="' + (o.departemen||'') + '"></div>' +
+        '</div><button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="mtSaveOrg()">Simpan Organisasi</button>';
+    } else if(j.org){
+      const orgChain = [j.org.direktorat, j.org.divisi, j.org.departemen].filter(Boolean).join(' / ') || '- / - / -';
+      html += '<div class="chain">' + orgChain + '</div>' +
+        '<div class="desc">Dipakai sebagai "Organisasi Pemilik" di Kontrol Dokumen untuk jenis dokumen yang datanya sendiri tidak punya field organisasi.</div>';
+    } else {
+      html += '<div class="chain" style="color:var(--gray-400);">- / - / -</div>' +
+        '<div class="desc">Belum diatur. Dipakai sebagai "Organisasi Pemilik" di Kontrol Dokumen untuk jenis dokumen yang datanya sendiri tidak punya field organisasi.</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="tabbar tabbar-fit">' +
+      '<div class="tab ' + (mtActiveDetailTab==='mtd-basic'?'active':'') + '" onclick="mtSwitchDetailTab(this,\'mtd-basic\')">Basic Information</div>' +
+      '<div class="tab ' + (mtActiveDetailTab==='mtd-ph'?'active':'') + '" onclick="mtSwitchDetailTab(this,\'mtd-ph\')">Placeholder Mapping</div>' +
+      '<div class="tab ' + (mtActiveDetailTab==='mtd-approval'?'active':'') + '" onclick="mtSwitchDetailTab(this,\'mtd-approval\')">Approval Flow</div>' +
+      '<div class="tab ' + (mtActiveDetailTab==='mtd-sig'?'active':'') + '" onclick="mtSwitchDetailTab(this,\'mtd-sig\')">Penempatan Tanda Tangan</div>' +
+      '<div class="tab ' + (mtActiveDetailTab==='mtd-ver'?'active':'') + '" onclick="mtSwitchDetailTab(this,\'mtd-ver\')">Version History</div>' +
+      '</div>';
+
+    html += '<div class="tab-panel ' + (mtActiveDetailTab==='mtd-basic'?'active':'') + '" id="mtd-basic">' + renderMtBasicInfo(j, kat, canWrite) + '</div>';
+    html += '<div class="tab-panel ' + (mtActiveDetailTab==='mtd-ph'?'active':'') + '" id="mtd-ph">' +
+      '<button class="btn btn-primary btn-sm" ' + (canWrite?'':'disabled') + ' onclick="mtAddField()">+ Tambah Field</button> ' +
+      '<button class="btn btn-outline btn-sm" ' + (canWrite?'':'disabled') + ' onclick="mtScanPlaceholder()">Scan Placeholder</button>' +
+      '<div class="hint" style="margin:6px 0 10px;">"Data Bersama" = field ini nilainya sama di semua jenis dokumen dalam satu pengajuan (mis. Nama Kandidat) -- ditandai supaya sistem tahu field ini aman diisi otomatis di dokumen lain begitu tersedia, tanpa menunggu diisi manual ulang per jenis dokumen.</div>' +
+      '<div class="table-wrap" style="margin-top:14px;"><table><thead><tr><th>Key</th><th>Label</th><th>Tipe</th><th>Wajib</th><th>Data Bersama</th><th>Urutan</th><th>Halaman</th><th></th></tr></thead><tbody>' +
+      renderMtPhRows(j, canWrite) +
+      '</tbody></table></div>' +
+      '</div>';
+    html += '<div class="tab-panel ' + (mtActiveDetailTab==='mtd-approval'?'active':'') + '" id="mtd-approval">' + renderMtApprovalFlow(j, canWrite) + '</div>';
+    html += '<div class="tab-panel ' + (mtActiveDetailTab==='mtd-sig'?'active':'') + '" id="mtd-sig">' + renderMtSignatureFields(j, canWrite) + '</div>';
+    html += '<div class="tab-panel ' + (mtActiveDetailTab==='mtd-ver'?'active':'') + '" id="mtd-ver">' + renderMtVersions(j, canWrite) + '</div>';
+
+    html += '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);">' +
+      '<button class="btn btn-outline" ' + (canWrite?'':'disabled') + ' onclick="mtSaveDraft()">Save Draft</button>' +
+      '<button class="btn btn-outline" ' + (canWrite?'':'disabled') + ' onclick="mtVersionUpdate()">Version Update</button>' +
+      '<button class="btn btn-primary" ' + (canWrite?'':'disabled') + ' onclick="mtPublish()">Publish</button>' +
+      '</div>';
+
+    detail.innerHTML = html;
+  }
+  function renderMtBasicInfo(j, kat, canWrite){
+    return '<div class="mt-field-row"><label>Nama Template (Terkunci, Otomatis dari Nama File Google Docs)</label><input type="text" disabled value="' + j.namaTemplate + '"></div>' +
+      '<div class="form-grid">' +
+      '<div class="mt-field-row"><label>Document Code</label><input type="text" disabled value="' + j.docCode + '"></div>' +
+      '<div class="mt-field-row"><label>Kategori</label><input type="text" disabled value="' + kat.nama + '"></div>' +
+      '</div>' +
+      '<div class="form-grid">' +
+      '<div class="mt-field-row"><label>Versi</label><input type="text" disabled value="' + j.versi + '"></div>' +
+      '<div class="mt-field-row"><label>Status</label><div style="padding-top:5px;"><span class="chip ' + (j.status==='Published'?'chip-green':'chip-gray') + '"><i></i>' + j.status + '</span></div></div>' +
+      '</div>' +
+      '<div class="mt-field-row"><label>Deskripsi</label><textarea id="mt-deskripsi" ' + (canWrite?'':'disabled') + ' placeholder="Opsional">' + j.deskripsi + '</textarea></div>' +
+      '<div class="mt-field-row"><label>Google Docs Template ID — Saat Ini</label><div class="mt-id-copy"><input type="text" disabled value="' + (j.googleDocId||'-') + '"><button class="btn btn-outline btn-sm" onclick="mtCopyDocId(\'' + j.googleDocId + '\')">Salin</button></div></div>' +
+      '<div class="mt-field-row"><label>ID Baru (Isi Hanya Jika Ingin Mengganti)</label><input type="text" id="mt-id-baru" ' + (canWrite?'':'disabled') + ' placeholder="Tempel link Google Doc atau ID-nya saja..."><div class="hint">Boleh tempel link lengkap (docs.google.com/document/d/ID_INI/edit) — ID-nya otomatis diambil.</div></div>' +
+      '<div class="form-grid">' +
+      '<div class="mt-field-row"><label>Dibuat Oleh</label><input type="text" disabled value="' + j.dibuatOleh + '"></div>' +
+      '<div class="mt-field-row"><label>Diperbarui Oleh</label><input type="text" disabled value="' + j.diperbaruiOleh + '"></div>' +
+      '</div>' +
+      '<div class="mt-field-row" style="max-width:220px;"><label>Terakhir Diperbarui</label><input type="text" disabled value="' + j.terakhirDiperbarui + '"></div>' +
+      '<div style="display:flex;gap:10px;">' +
+      '<button class="btn btn-primary btn-sm" ' + (j.googleDocId?'':'disabled') + ' onclick="mtOpenDoc(\'' + j.googleDocId + '\')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg> Buka Template Dokumen</button>' +
+      '<button class="btn btn-outline btn-sm" onclick="mtPreviewTemplate()"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg> Preview Template</button>' +
+      '</div>';
+  }
+  function renderMtPhRows(j, canWrite){
+    if(!j.placeholders || !j.placeholders.length) return '<tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">Belum ada field terdeteksi — klik "Scan Placeholder" atau "+ Tambah Field".</td></tr>';
+    return j.placeholders.map((p, pi) => '<tr><td class="mono">' + p.key + '</td><td>' + p.label + '</td><td>' + p.tipe + '</td><td>' + (p.wajib===true?'Ya':p.wajib===false?'Tidak':'-') + '</td>' +
+      '<td><input type="checkbox" ' + (p.shared?'checked':'') + ' ' + (canWrite?'':'disabled') + ' onchange="mtToggleFieldShared(' + pi + ', this.checked)"></td>' +
+      '<td>' + p.urutan + '</td><td>' + (p.halaman||'-') + '</td>' +
+      '<td style="white-space:nowrap;"><button class="mt-icon-btn" ' + (canWrite?'':'disabled') + ' onclick="showToast(\'Edit field ' + p.key + '\')" title="Edit"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>' +
+      '<button class="mt-icon-btn" ' + (canWrite?'':'disabled') + ' onclick="mtDeleteField(' + pi + ')" title="Hapus"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button></td></tr>').join('');
+  }
+  function mtFlowLabel(flow){
+    if(!flow || !flow.length) return '(belum ada tahap)';
+    const segments = [];
+    flow.forEach(function(layer){
+      if(layer.parallelWithPrevious && segments.length) segments[segments.length-1] += ' ∥ ' + (layer.role || layer.label);
+      else segments.push(layer.role || layer.label);
+    });
+    return segments.join(' → ');
+  }
+  function renderMtApprovalFlow(j, canWrite){
+    const flow = migrateApprovalMatrixToFlow_(j);
+    const isOffering = MT_OFFERING_KODE_SET.indexOf(j.kode) !== -1;
+    let html = '<div class="mt-flow-preview"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> Alur: ' + mtFlowLabel(flow) + '</div>';
+    if(isOffering) html += '<div class="hint" style="margin:-10px 0 16px;">Alur ini mendokumentasikan proses Offering yang sesungguhnya berjalan di halaman Rekrutmen (<code>offering_submissions.stages</code>) — mengubahnya di sini TIDAK mengubah perilaku pengajuan Offering yang sedang berjalan.</div>';
+
+    html += flow.map(function(layer, idx){
+      return '<div class="mt-approval-row mt-layer-row">' +
+        '<div class="mt-layer-order">' + (idx+1) + (layer.parallelWithPrevious ? '∥' : '') + '</div>' +
+        '<div style="flex:1;">' +
+          '<div class="mt-layer-grid">' +
+            '<div class="form-field" style="margin-bottom:0;"><label>Label Tahap</label><input type="text" ' + (canWrite?'':'disabled') + ' value="' + (layer.label||'') + '" onchange="mtEditApprovalLayer(\'' + layer.id + '\',\'label\',this.value)"></div>' +
+            '<div class="form-field" style="margin-bottom:0;"><label>Role</label><input type="text" ' + (canWrite?'':'disabled') + ' value="' + (layer.role||'') + '" onchange="mtEditApprovalLayer(\'' + layer.id + '\',\'role\',this.value)"></div>' +
+            '<div class="form-field" style="margin-bottom:0;"><label>Action</label><select ' + (canWrite?'':'disabled') + ' onchange="mtEditApprovalLayer(\'' + layer.id + '\',\'action\',this.value)">' +
+              MT_APPROVAL_ACTIONS.map(function(a){ return '<option value="' + a.id + '" ' + (layer.action===a.id?'selected':'') + '>' + a.label + '</option>'; }).join('') +
+            '</select></div>' +
+            '<div class="form-field" style="margin-bottom:0;grid-column:1/-1;"><label>Actor Source</label><input type="text" ' + (canWrite?'':'disabled') + ' value="' + (layer.actorSource||'') + '" placeholder="Deskripsi bebas — resolusi otomatis penuh menyusul" onchange="mtEditApprovalLayer(\'' + layer.id + '\',\'actorSource\',this.value)"></div>' +
+          '</div>' +
+          '<div class="mt-layer-toggles">' +
+            '<label><input type="checkbox" ' + (layer.required?'checked':'') + ' ' + (canWrite?'':'disabled') + ' onchange="mtEditApprovalLayer(\'' + layer.id + '\',\'required\',this.checked)"> Wajib</label>' +
+            (idx>0 ? '<label><input type="checkbox" ' + (layer.parallelWithPrevious?'checked':'') + ' ' + (canWrite?'':'disabled') + ' onchange="mtEditApprovalLayer(\'' + layer.id + '\',\'parallelWithPrevious\',this.checked)"> Paralel dengan tahap sebelumnya</label>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="mt-layer-actions">' +
+          '<button class="mt-icon-btn" ' + (canWrite && idx>0 ? '' : 'disabled') + ' onclick="mtMoveApprovalLayer(\'' + layer.id + '\',-1)" title="Naikkan urutan"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>' +
+          '<button class="mt-icon-btn" ' + (canWrite && idx<flow.length-1 ? '' : 'disabled') + ' onclick="mtMoveApprovalLayer(\'' + layer.id + '\',1)" title="Turunkan urutan"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.4"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>' +
+          '<button class="mt-icon-btn" ' + (canWrite?'':'disabled') + ' onclick="mtDeleteApprovalLayer(\'' + layer.id + '\')" title="Hapus tahap"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    if(canWrite){
+      html += '<button class="btn btn-outline btn-sm" style="margin-top:6px;margin-right:8px;" onclick="mtAddApprovalLayer()">+ Tambah Tahap</button>' +
+        '<button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="mtSaveApprovalFlow()">Simpan Alur Approval</button>';
+    }
+    return html;
+  }
+  window.mtEditApprovalLayer = function(layerId, field, value){
+    const j = activeMtJenis(); if(!j) return;
+    const layer = (j.approvalFlow || []).find(function(l){ return l.id === layerId; });
+    if(!layer) return;
+    layer[field] = value;
+    if(field === 'label' || field === 'role' || field === 'action' || field === 'parallelWithPrevious'){
+      mtActiveDetailTab = 'mtd-approval';
+      renderMtDetail();
+    }
+  };
+  window.mtMoveApprovalLayer = function(layerId, dir){
+    const j = activeMtJenis(); if(!j) return;
+    const flow = j.approvalFlow || [];
+    const idx = flow.findIndex(function(l){ return l.id === layerId; });
+    const target = idx + dir;
+    if(idx === -1 || target < 0 || target >= flow.length) return;
+    const tmp = flow[idx]; flow[idx] = flow[target]; flow[target] = tmp;
+    flow.forEach(function(l, i){ l.order = i + 1; });
+    mtActiveDetailTab = 'mtd-approval';
+    renderMtDetail();
+  };
+  window.mtDeleteApprovalLayer = function(layerId){
+    const j = activeMtJenis(); if(!j) return;
+    j.approvalFlow = (j.approvalFlow || []).filter(function(l){ return l.id !== layerId; });
+    j.approvalFlow.forEach(function(l, i){ l.order = i + 1; });
+    mtActiveDetailTab = 'mtd-approval';
+    renderMtDetail();
+  };
+  window.mtAddApprovalLayer = function(){
+    const j = activeMtJenis(); if(!j) return;
+    j.approvalFlow = j.approvalFlow || [];
+    j.approvalFlow.push(mtNewApprovalLayer_({ order:j.approvalFlow.length+1 }));
+    mtActiveDetailTab = 'mtd-approval';
+    renderMtDetail();
+  };
+  window.mtSaveApprovalFlow = function(){
+    const j = activeMtJenis(); if(!j) return;
+    mtActiveDetailTab = 'mtd-approval';
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Alur approval disimpan: ' + mtFlowLabel(j.approvalFlow) + '.');
+  };
+  var mtPendingSigOpts_ = {};
+  var mtSigDragLayerId_ = null;
+  function mtSignatureFieldForLayer_(j, layerId){
+    return (j.signatureFields || []).find(function(f){ return f.sourceLayerId === layerId; });
+  }
+  function mtSignatureChipHtml_(j, layer, canWrite){
+    var f = mtSignatureFieldForLayer_(j, layer.id);
+    var placed = !!(f && f.placement && f.placement.paragraphIndex != null);
+    var defaultType = MT_ACTION_DEFAULT_SIG_TYPE[layer.action] || 'paraf';
+    var pending = mtPendingSigOpts_[layer.id] || {};
+    var type = f ? (f.type || defaultType) : (pending.type || defaultType);
+    var isExternal = f ? !!f.isExternal : (pending.isExternal != null ? pending.isExternal : mtLooksExternal_(layer.role + ' ' + layer.actorSource));
+    var dragAttr = (canWrite && !placed) ? ' draggable="true" ondragstart="mtSigDragStart_(event,\'' + layer.id + '\')"' : '';
+    return '<div class="mt-sig-chip' + (placed?' placed':'') + '"' + dragAttr + '>' +
+      '<div class="mt-sig-chip-title">' + mtEsc_(layer.role || layer.label) + ' <span class="muted">— ' + mtActionLabel_(layer.action) + '</span></div>' +
+      '<div class="mt-sig-chip-opts">' +
+        '<label><input type="radio" name="sigtype-' + layer.id + '" ' + (type==='paraf'?'checked':'') + ' ' + (canWrite?'':'disabled') + ' onchange="mtSetSigOpt_(\'' + layer.id + '\',\'type\',\'paraf\')"> Paraf</label>' +
+        '<label><input type="radio" name="sigtype-' + layer.id + '" ' + (type==='tandaTangan'?'checked':'') + ' ' + (canWrite?'':'disabled') + ' onchange="mtSetSigOpt_(\'' + layer.id + '\',\'type\',\'tandaTangan\')"> Tanda Tangan</label>' +
+      '</div>' +
+      '<label class="mt-sig-chip-ext"><input type="checkbox" ' + (isExternal?'checked':'') + ' ' + (canWrite?'':'disabled') + ' onchange="mtSetSigOpt_(\'' + layer.id + '\',\'isExternal\',this.checked)"> Pihak eksternal (kandidat/mitra)</label>' +
+      (placed
+        ? '<div class="mt-sig-chip-badge">✓ Paragraf #' + f.placement.paragraphIndex + (f.placement.committed ? '' : ' <i>(belum disimpan)</i>') + '</div>' +
+          '<div class="mt-sig-chip-marker mono">' + f.marker + '</div>' +
+          (canWrite ? '<button class="btn btn-outline btn-sm" onclick="mtUnplaceSignatureField(\'' + f.id + '\')">Copot</button>' : '')
+        : (canWrite ? '<div class="mt-sig-chip-hint">↳ drag ke paragraf di kanan</div>' : '<div class="mt-sig-chip-hint">Belum ditempatkan</div>')
+      ) +
+    '</div>';
+  }
+  function mtSignatureScanHtml_(j){
+    if(!j.googleDocId) return '<div class="muted" style="font-size:12.5px;">Belum ada Google Docs Template ID — isi dulu di tab Basic Information.</div>';
+    var scan = mtLastScan_[j.kode];
+    if(!scan) return '<div class="muted" style="font-size:12.5px;">Belum pernah di-scan untuk jenis dokumen ini. Klik "Scan Ulang".</div>';
+    var placedByIndex = {};
+    (j.signatureFields || []).forEach(function(f){ if(f.placement && f.placement.paragraphIndex != null) placedByIndex[f.placement.paragraphIndex] = f; });
+    var rows = scan.paragraphs.map(function(p){
+      var placedField = placedByIndex[p.index];
+      var text = p.isEmpty ? '(paragraf kosong)' : (mtEsc_(p.text.slice(0,80)) + (p.text.length>80?'…':''));
+      return '<div class="mt-sig-para-row' + (p.isEmpty?' empty':'') + '" ondragover="event.preventDefault();" ondrop="mtSigDrop_(event,' + p.index + ')">' +
+        '<span class="mt-sig-para-idx">#' + p.index + '</span>' +
+        '<span class="mt-sig-para-text">' + text + '</span>' +
+        (placedField ? '<span class="mt-sig-para-marker mono">' + placedField.marker + '</span>' : '') +
+      '</div>';
+    }).join('');
+    return '<div class="mt-sig-scan-meta">Terakhir di-scan: ' + new Date(scan.scannedAt).toLocaleString('id-ID') + ' — tabel &amp; gambar tidak ikut tampil di sini.</div>' +
+      '<div class="mt-sig-paragraphs">' + rows + '</div>';
+  }
+  function renderMtSignatureFields(j, canWrite){
+    var flow = j.approvalFlow || [];
+    var html = '<div class="mt-org-box"><div class="lbl">Cara Pakai</div>' +
+      '<div class="desc">Scan dokumen ini (tombol di kolom kanan), lalu drag chip tahap dari kolom kiri ke paragraf tujuan di kolom kanan. Kode marker otomatis ditulis ke Google Doc asli begitu Anda klik "Simpan Penempatan" — tidak perlu salin-tempel manual lagi. Tabel dan gambar di dalam dokumen tidak ikut ditampilkan di sini — kalau kolom tanda tangan berada di dalam tabel, tetap tempel marker manual seperti sebelumnya.</div></div>';
+
+    if(!flow.length){
+      html += '<div class="muted" style="font-size:12.5px;">Belum ada tahap di Approval Flow — tambahkan tahap dulu di tab "Approval Flow" sebelum menempatkan tanda tangan.</div>';
+      return html;
+    }
+
+    var orphans = (j.signatureFields || []).filter(function(f){ return !flow.some(function(l){ return l.id === f.sourceLayerId; }); });
+
+    html += '<div class="mt-sig-columns">' +
+      '<div class="mt-sig-col">' +
+        '<div class="mt-sig-col-title">Kolom Tanda Tangan</div>' +
+        flow.map(function(layer){ return mtSignatureChipHtml_(j, layer, canWrite); }).join('') +
+        (orphans.length ? '<div class="mt-sig-col-title" style="margin-top:14px;">Tahap Sumber Sudah Dihapus</div>' + orphans.map(function(f){
+          return '<div class="mt-sig-chip orphan"><div class="mt-sig-chip-title">' + mtEsc_(f.role || '(tanpa nama)') + '</div>' +
+            '<div class="mt-sig-chip-marker mono">' + f.marker + '</div>' +
+            (canWrite ? '<button class="btn btn-outline btn-sm" onclick="mtDeleteSignatureField(\'' + f.id + '\')">Hapus</button>' : '') +
+          '</div>';
+        }).join('') : '') +
+      '</div>' +
+      '<div class="mt-sig-col mt-sig-col-doc">' +
+        '<div class="mt-sig-col-title"><span>Isi Dokumen (Hasil Scan)</span>' + (canWrite ? '<button class="btn btn-outline btn-sm" onclick="mtScanForSignatures()">Scan Ulang</button>' : '') + '</div>' +
+        mtSignatureScanHtml_(j) +
+      '</div>' +
+    '</div>';
+
+    if(canWrite) html += '<button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="mtCommitSignaturePlacements()">Simpan Penempatan</button>';
+    return html;
+  }
+  window.mtScanForSignatures = async function(){
+    var j = activeMtJenis(); if(!j) return;
+    if(!j.googleDocId){ showToast('Belum ada Google Docs Template ID — isi dulu di Basic Information.'); return; }
+    if(!offeringServicesConfigured()){ showToast('Scan belum aktif — OFFERING_SERVICES_URL belum dikonfigurasi. Hubungi admin.'); return; }
+    showToast('Memindai Google Doc...');
+    var result = await mtCallOfferingServices_('scanTemplateParagraphs', { googleDocId: j.googleDocId });
+    if(!result.ok){ showToast('Scan gagal — ' + result.error); return; }
+    mtLastScan_[j.kode] = { paragraphs: result.paragraphs, scannedAt: result.scannedAt };
+    mtActiveDetailTab = 'mtd-sig';
+    renderMtDetail();
+  };
+  window.mtSetSigOpt_ = function(layerId, key, value){
+    mtPendingSigOpts_[layerId] = mtPendingSigOpts_[layerId] || {};
+    mtPendingSigOpts_[layerId][key] = value;
+    var j = activeMtJenis(); if(!j) return;
+    var f = mtSignatureFieldForLayer_(j, layerId);
+    if(f){ f[key] = value; mtPersist_(j); }
+  };
+  window.mtSigDragStart_ = function(ev, layerId){
+    mtSigDragLayerId_ = layerId;
+    try{ ev.dataTransfer.setData('text/plain', layerId); }catch(e){}
+  };
+  window.mtSigDrop_ = function(ev, paragraphIndex){
+    ev.preventDefault();
+    var layerId = mtSigDragLayerId_ || (ev.dataTransfer && ev.dataTransfer.getData('text/plain'));
+    mtSigDragLayerId_ = null;
+    if(!layerId) return;
+    var j = activeMtJenis(); if(!j) return;
+    var layer = (j.approvalFlow || []).find(function(l){ return l.id === layerId; });
+    if(!layer) return;
+    var scan = mtLastScan_[j.kode];
+    var para = scan && scan.paragraphs.find(function(p){ return p.index === paragraphIndex; });
+    j.signatureFields = j.signatureFields || [];
+    var f = mtSignatureFieldForLayer_(j, layerId);
+    var pending = mtPendingSigOpts_[layerId] || {};
+    if(!f){
+      f = {
+        id:'sig' + Date.now().toString(36), role: layer.role || layer.label, sourceLayerId: layer.id, sourceStage:'',
+        isExternal: pending.isExternal != null ? pending.isExternal : mtLooksExternal_(layer.role + ' ' + layer.actorSource),
+        type: pending.type || MT_ACTION_DEFAULT_SIG_TYPE[layer.action] || 'paraf',
+        marker: mtGenSignatureMarker_(j, layer.role || layer.label)
+      };
+      j.signatureFields.push(f);
+    }
+    f.placement = { paragraphIndex: paragraphIndex, paragraphPreviewText: para ? para.text.slice(0,80) : '', scannedAt: scan ? scan.scannedAt : null, committed:false };
+    mtActiveDetailTab = 'mtd-sig';
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Ditempatkan sementara di paragraf #' + paragraphIndex + ' — klik "Simpan Penempatan" untuk menulis ke Google Doc.');
+  };
+  window.mtUnplaceSignatureField = function(id){
+    var j = activeMtJenis(); if(!j) return;
+    var f = (j.signatureFields || []).find(function(x){ return x.id === id; });
+    if(!f) return;
+    var wasCommitted = f.placement && f.placement.committed;
+    f.placement = { paragraphIndex:null, paragraphPreviewText:null, scannedAt:null, committed:false };
+    mtActiveDetailTab = 'mtd-sig';
+    renderMtDetail();
+    mtPersist_(j);
+    showToast(wasCommitted ? 'Penempatan dicopot dari sini. Kode marker LAMA mungkin masih ada di Google Doc — hapus manual di sana kalau perlu.' : 'Penempatan dicopot.');
+  };
+  window.mtDeleteSignatureField = function(id){
+    var j = activeMtJenis(); if(!j) return;
+    j.signatureFields = (j.signatureFields || []).filter(function(f){ return f.id !== id; });
+    mtActiveDetailTab = 'mtd-sig';
+    renderMtDetail();
+    mtPersist_(j);
+  };
+  window.mtCommitSignaturePlacements = async function(){
+    var j = activeMtJenis(); if(!j) return;
+    var pending = (j.signatureFields || []).filter(function(f){ return f.placement && f.placement.paragraphIndex != null && !f.placement.committed; });
+    if(!pending.length){ showToast('Tidak ada penempatan baru untuk disimpan.'); return; }
+    if(!j.googleDocId){ showToast('Belum ada Google Docs Template ID.'); return; }
+    if(!offeringServicesConfigured()){ showToast('Layanan Apps Script belum dikonfigurasi.'); return; }
+    showToast('Memindai ulang dokumen untuk memastikan posisi masih cocok...');
+    var rescan = await mtCallOfferingServices_('scanTemplateParagraphs', { googleDocId: j.googleDocId });
+    if(!rescan.ok){ showToast('Gagal scan ulang — ' + rescan.error); return; }
+    mtLastScan_[j.kode] = { paragraphs: rescan.paragraphs, scannedAt: rescan.scannedAt };
+
+    var okCount = 0, staleCount = 0, failCount = 0;
+    for(var i=0;i<pending.length;i++){
+      var f = pending[i];
+      var freshPara = rescan.paragraphs[f.placement.paragraphIndex];
+      var freshPreview = freshPara ? freshPara.text.slice(0,80) : null;
+      if(freshPreview !== f.placement.paragraphPreviewText){
+        staleCount++;
+        showToast('"' + f.role + '": posisi sudah tidak cocok (paragraf #' + f.placement.paragraphIndex + ' berubah) — tempatkan ulang.');
+        continue;
+      }
+      var res = await mtCallOfferingServices_('placeSignatureMarker', { googleDocId: j.googleDocId, paragraphIndex: f.placement.paragraphIndex, marker: f.marker });
+      if(res.ok){ f.placement.committed = true; okCount++; }
+      else { failCount++; showToast('"' + f.role + '": gagal — ' + res.error); }
+    }
+    mtActiveDetailTab = 'mtd-sig';
+    renderMtDetail();
+    mtPersist_(j);
+    showToast(okCount + ' penempatan tersimpan ke Google Doc' + (staleCount?', ' + staleCount + ' usang (tempatkan ulang)':'') + (failCount?', ' + failCount + ' gagal':'') + '.');
+  };
+  function renderMtVersions(j, canWrite){
+    if(!j.versions || !j.versions.length) return '<div class="muted" style="font-size:12.5px;">Belum ada riwayat versi — riwayat baru tercatat setelah Publish atau Version Update pertama (Save Draft tidak dicatat di sini).</div>';
+    return j.versions.map((v, vi) => '<div class="wz-summary-row"><span>v' + v.versi + (vi===0?' (aktif)':'') + ' · ' + (v.aksi||'-') + ' · ' + v.by + ' · ' + v.tgl + '</span>' + (vi===0 ? '<b>' + v.status + '</b>' : '<button class="btn btn-outline btn-sm" ' + (canWrite?'':'disabled') + ' onclick="mtRollbackVersion(\'' + v.versi + '\')">Rollback</button>') + '</div>').join('');
+  }
+  window.mtToggleOrgEdit = function(){ mtOrgEditMode = !mtOrgEditMode; renderMtDetail(); };
+  window.mtSaveOrg = function(){
+    const j = activeMtJenis(); if(!j) return;
+    j.org = { direktorat: document.getElementById('mt-org-direktorat').value, divisi: document.getElementById('mt-org-divisi').value, departemen: document.getElementById('mt-org-departemen').value };
+    mtOrgEditMode = false;
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Organisasi Pemilik disimpan.');
+  };
+  window.mtCopyDocId = function(id){
+    if(!id){ showToast('Belum ada Google Docs Template ID untuk jenis dokumen ini.'); return; }
+    try{ navigator.clipboard.writeText(id); }catch(e){}
+    showToast('Google Docs Template ID disalin.');
+  };
+  window.mtOpenDoc = function(id){
+    if(!id){ showToast('Belum ada Google Docs Template ID untuk jenis dokumen ini.'); return; }
+    window.open('https://docs.google.com/document/d/' + id + '/edit', '_blank', 'noopener');
+  };
+  window.mtAddField = function(){
+    const j = activeMtJenis(); if(!j) return;
+    j.placeholders = j.placeholders || [];
+    j.placeholders.push({ key:'FIELD_BARU_' + (j.placeholders.length+1), label:'Field Baru', tipe:'text', wajib:null, shared:false, urutan:j.placeholders.length+1, halaman:null });
+    mtActiveDetailTab = 'mtd-ph';
+    renderMtDetail();
+    mtPersist_(j);
+  };
+  window.mtToggleFieldShared = function(pi, checked){
+    const j = activeMtJenis(); if(!j) return;
+    j.placeholders[pi].shared = checked;
+    mtActiveDetailTab = 'mtd-ph';
+    mtPersist_(j);
+    showToast(checked ? 'Ditandai sebagai Data Bersama.' : 'Ditandai bukan Data Bersama.');
+  };
+  window.mtDeleteField = function(pi){
+    const j = activeMtJenis(); if(!j) return;
+    j.placeholders.splice(pi, 1);
+    mtActiveDetailTab = 'mtd-ph';
+    renderMtDetail();
+    mtPersist_(j);
+  };
+  function mtExtractPlaceholders_(text){
+    const re = /\{\{([^{}]+)\}\}|\{([^{}]+)\}/g;
+    const found = [];
+    const seen = {};
+    let m;
+    while((m = re.exec(text)) !== null){
+      const key = m[1] !== undefined ? m[1] : m[2];
+      if(seen[key]) continue;
+      seen[key] = true;
+      found.push(key);
+    }
+    return found;
+  }
+  function mtApplyScanResult_(j, found){
+    j.placeholders = j.placeholders || [];
+    const existingKeys = j.placeholders.map(function(p){ return p.key; });
+    const brandNew = found.filter(function(k){ return existingKeys.indexOf(k) === -1; });
+    brandNew.forEach(function(key){
+      j.placeholders.push({ key:key, label:key, tipe:'text', wajib:null, urutan:j.placeholders.length+1, halaman:null });
+    });
+    renderMtDetail();
+    mtPersist_(j);
+    showToast(found.length + ' placeholder ditemukan di dokumen, ' + brandNew.length + ' field baru ditambahkan — Tipe/Wajib masih perlu diisi manual.');
+  }
+  var mtLastScan_ = {};
+  window.mtScanPlaceholder = async function(){
+    const j = activeMtJenis(); if(!j) return;
+    if(!j.googleDocId){ showToast('Belum ada Google Docs Template ID — tempel link dulu sebelum scan.'); return; }
+    mtActiveDetailTab = 'mtd-ph';
+    renderMtDetail();
+    if(!offeringServicesConfigured()){
+      showToast('Scan belum aktif — OFFERING_SERVICES_URL belum dikonfigurasi. Hubungi admin.');
+      return;
+    }
+    showToast('Memindai Google Doc...');
+    var result = await mtCallOfferingServices_('scanTemplateParagraphs', { googleDocId: j.googleDocId });
+    if(!result.ok){ showToast('Scan gagal — ' + result.error); return; }
+    mtLastScan_[j.kode] = { paragraphs: result.paragraphs, scannedAt: result.scannedAt };
+    var fullText = result.paragraphs.map(function(p){ return p.text; }).join('\n');
+    mtApplyScanResult_(j, mtExtractPlaceholders_(fullText));
+    if(mtActiveDetailTab === 'mtd-sig') renderMtDetail();
+  };
+
+  window.mtSaveDraft = function(){
+    const j = activeMtJenis(); if(!j) return;
+    const fields = mtReadFormFields_(j);
+    if(!fields.templateFileId){ showToast('ID Google Doc template wajib diisi.'); return; }
+    upsertMasterTemplateRow_(j, fields, 'Draft');
+    renderMtJenisList();
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Disimpan sebagai Draft.');
+  };
+  function mtReadFormFields_(j){
+    const idInput = document.getElementById('mt-id-baru');
+    const deskInput = document.getElementById('mt-deskripsi');
+    const typedId = idInput ? idInput.value.trim() : '';
+    return { templateFileId: typedId || j.googleDocId, deskripsi: deskInput ? deskInput.value : j.deskripsi };
+  }
+  window.mtVersionUpdate = function(){
+    const j = activeMtJenis(); if(!j) return;
+    const fields = mtReadFormFields_(j);
+    if(!fields.templateFileId){ showToast('ID Google Doc template wajib diisi.'); return; }
+    const next = bumpVersi_(j.versi);
+    const tabLabel = mtActiveDetailTab === 'mtd-basic' ? 'Basic Information' : mtActiveDetailTab === 'mtd-ph' ? 'Placeholder Mapping' : 'Version History';
+    upsertMasterTemplateRow_(j, Object.assign({}, fields, { versi: next }), 'Published');
+    appendVersionHistory_(j, j.versi, j.googleDocId, 'Published', 'VersionUp (' + tabLabel + ')');
+    renderMtJenisList();
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Versi baru dibuat (v' + j.versi + ') & dipublikasikan.');
+  };
+  window.mtPublish = function(){
+    const j = activeMtJenis(); if(!j) return;
+    const fields = mtReadFormFields_(j);
+    if(!fields.templateFileId){ showToast('ID Google Doc template wajib diisi.'); return; }
+    upsertMasterTemplateRow_(j, fields, 'Published');
+    appendVersionHistory_(j, j.versi, j.googleDocId, 'Published', 'Publish');
+    renderMtJenisList();
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Template dipublikasikan.');
+  };
+  window.mtPreviewTemplate = function(){
+    const j = activeMtJenis(); if(!j) return;
+    if(!j.googleDocId){ showToast('Belum ada Google Docs Template ID — tidak ada dokumen untuk di-preview.'); return; }
+    const matched = (j.placeholders || []).length;
+    showToast('Preview + validasi: ' + matched + ' placeholder matched dengan dokumen. (Simulasi — mockup ini tidak scan dokumen sungguhan.)');
+  };
+  window.mtRollbackVersion = function(versi){
+    const j = activeMtJenis(); if(!j) return;
+    const snap = (j.versions || []).find(v => v.versi === versi);
+    if(!snap){ showToast('Snapshot versi tidak ditemukan.'); return; }
+    j.googleDocId = snap.templateFileId;
+    j.versi = snap.versi;
+    j.status = 'Published'; // rollback = pilih versi Published sebelumnya, bukan kembali ke Draft
+    j.diperbaruiOleh = CURRENT_USER_EMAIL;
+    j.terakhirDiperbarui = fmtDateShort();
+    appendVersionHistory_(j, j.versi, j.googleDocId, 'Published', 'Rollback');
+    renderMtJenisList();
+    renderMtDetail();
+    mtPersist_(j);
+    showToast('Rollback ke v' + versi + ' berhasil — dicatat sebagai entri riwayat baru, riwayat lama tetap ada.');
+  };
+  window.mtSwitchDetailTab = function(el, panelId){
+    mtActiveDetailTab = panelId;
+    el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    const card = el.closest('.card');
+    card.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    card.querySelector('#' + panelId).classList.add('active');
+  };
+
+  // ===== KONTROL DOKUMEN — registry tunggal =====
+  function renderKontrolDokumen(){
+    const rows = edfQueue.map(it => {
+      const s = edfStatusRingkas(it);
+      return { reg: it.num, jenis: it.kind==='offering'?'Offering Letter':it.jenis, kategori: it.kind==='offering'?'Offering Letter':(it.kategori||'-'), unit: it.kind==='offering'?it.direktorat:it.unit, tgl: it.created, inisiator: it.inisiator, status:s };
+    });
+    document.getElementById('kd-tbody').innerHTML = rows.map(r =>
+      '<tr><td class="mono">' + r.reg + '</td><td><span class="chip ' + (r.jenis==='Offering Letter'?'chip-blue':'chip-purple') + '"><i></i>' + r.jenis + '</span></td><td>' + r.kategori + '</td><td>' + r.unit + '</td><td class="muted">' + r.tgl + '</td><td>' + r.inisiator + '</td><td><span class="status-ringkas ' + r.status.cls + '">' + r.status.text + '</span></td></tr>'
+    ).join('');
+  }
+
+  // ===== REPOSITORY — struktur folder otomatis Kategori / Jenis Dokumen =====
+  const repoFolders = [
+    { key:'all', label:'Semua Dokumen', sub:null },
+    { key:'offering', label:'Offering Letter', sub:null },
+    { key:'kontrak', label:'Kontrak Kerja', sub:['PKWT','PKRH'] },
+    { key:'kemitraan', label:'Kemitraan', sub:['PBKK','PBP','PMTR','MMIN'] },
+    { key:'sk', label:'Surat Keputusan', sub:['SKEP','INCN','MTIN'] }
+  ];
+  let repoActiveFolder = 'all';
+
+let repoActiveCategory = 'all'; // Menyimpan state folder yang sedang dibuka
+
+  function renderRepoTree() {
+    const container = document.getElementById('repo-folder-tree');
+    if (!container) return;
+
+    // Kategori folder statis utama
+    let folders = [
+      { id: 'all', name: 'Semua Dokumen', icon: '📁' },
+      { id: 'Offering Letter', name: 'Offering Letter', icon: '📂' },
+      { id: 'Kontrak Kerja', name: 'Kontrak Kerja', icon: '📂', children: ['PKWT', 'PKRHH'] },
+      { id: 'Kemitraan', name: 'Kemitraan', icon: '📂', children: ['PBKK', 'PBP', 'PMTR', 'MMIN'] },
+      { id: 'Surat Keputusan', name: 'Surat Keputusan', icon: '📂' },
+      { id: 'Manual Mutu', name: 'Manual Mutu', icon: '📂' }
+    ];
+
+    container.innerHTML = folders.map(f => {
+      const isActive = repoActiveCategory === f.id;
+      let html = `<div onclick="selectRepoFolder('${f.id}', '${f.name}')" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: ${isActive?'600':'500'}; background: ${isActive?'var(--primary-light)':'transparent'}; color: ${isActive?'var(--primary)':'var(--gray-700)'}; transition: background 0.15s;">
+        <span>${f.icon}</span>
+        <span style="flex:1;">${f.name}</span>
+      </div>`;
+
+      // Jika ada sub-folder di dalamnya
+      if (f.children && f.children.length > 0) {
+        html += `<div style="padding-left: 20px; display: flex; flex-direction: column; gap: 2px; margin-top: 2px; margin-bottom: 2px;">` + 
+          f.children.map(sub => {
+            const isSubActive = repoActiveCategory === sub;
+            return `<div onclick="selectRepoFolder('${sub}', '${sub} (${f.name})')" style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius); cursor: pointer; font-size: 12.5px; font-weight: ${isSubActive?'600':'400'}; background: ${isSubActive?'var(--primary-light)':'transparent'}; color: ${isSubActive?'var(--primary)':'var(--gray-600)'};">
+              <span style="font-size:10px;">↳</span>
+              <span style="flex:1;">${sub}</span>
+            </div>`;
+          }).join('') + `</div>`;
+      }
+      return html;
+    }).join('');
+  }
+
+  function selectRepoFolder(catId, catName) {
+    repoActiveCategory = catId;
+    document.getElementById('repo-current-folder-title').textContent = catName;
+    document.getElementById('repo-current-folder-desc').textContent = `Menampilkan berkas dalam direktori: ${catName}`;
+    renderRepoTree();
+    renderRepoFiles();
+  }
+
+  function renderRepoFiles() {
+    const tbody = document.getElementById('repo-files-tbody');
+    const searchVal = (document.getElementById('repo-search-input')?.value || '').toLowerCase();
+    if (!tbody) return;
+
+    // Ambil data file (dari edfQueue yang selesai/aktif atau data upload mandiri)
+    let files = edfQueue.filter(it => edfIsDone(it) || it.kind === 'batch' || it.kind === 'offering');
+
+    // Filter berdasarkan folder aktif di sebelah kiri
+    if (repoActiveCategory !== 'all') {
+      files = files.filter(f => {
+        const jenis = f.kind === 'offering' ? 'Offering Letter' : (f.jenis || '');
+        const kat = f.kategori || '';
+        return jenis === repoActiveCategory || kat === repoActiveCategory || jenis.includes(repoActiveCategory);
+      });
+    }
+
+    // Filter berdasarkan kolom pencarian di kanan
+    if (searchVal) {
+      files = files.filter(f => {
+        const subjek = (f.kind === 'offering' ? (f.nama + ' ' + f.posisi) : (f.penerima + ' ' + f.jenis)).toLowerCase();
+        return subjek.includes(searchVal) || (f.num && f.num.toLowerCase().includes(searchVal));
+      });
+    }
+
+    tbody.innerHTML = files.length > 0 ? files.map((f, i) => {
+      const subject = f.kind === 'offering' ? (f.nama + ' — ' + f.posisi) : ((f.penerima || 'Dokumen Mandiri') + ' — ' + (f.jenis || 'File'));
+      const typeLabel = f.kind === 'offering' ? 'Offering Letter' : (f.jenis || 'Dokumen');
+      const tgl = f.created || 'Hari ini';
+
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>
+          <div style="font-weight: 600; color: var(--gray-900);">${subject}</div>
+          <div class="muted" style="font-size: 11px;">No: ${f.num || f.id}</div>
+        </td>
+        <td><span class="chip ${f.kind==='offering'?'chip-blue':'chip-purple'}"><i></i>${typeLabel}</span></td>
+        <td class="muted">${tgl}</td>
+        <td style="text-align: right;">
+          <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11.5px;" onclick="showToast('Membuka 📁 Preview Google Drive untuk ${f.num || f.id}')">Lihat File</button>
+        </td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="5" style="text-align: center; padding: 32px;" class="muted">Tidak ada dokumen di dalam folder ini.</td></tr>`;
+  }
+
+  // ===== INIT =====
+  // §4.1: reloadOfferingIntoQueue() dulu (muat offering_submissions asli dari Firestore) sebelum
+  // render apa pun yang membaca edfQueue -- digerbang login (DasariaAuth.ready()) sama seperti
+  // rekrutmen.html, supaya CRC harus login dulu untuk melihat/memproses pengajuan asli.
+  let arsipData = [
+  { reg:'DOC-2025-0112', subjek:'PKWT — Budi Santoso', versi:'v1.0', tglArsip:'12 Jan 2026', alasan:'Digantikan kontrak perpanjangan baru (DOC-2026-0045)', jenis:'PKWT' },
+  { reg:'DOC-2025-0899', subjek:'SOP Infrastruktur CNI', versi:'v1.2', tglArsip:'15 Ags 2026', alasan:'Revisi major alur backbone, digantikan v2.0', jenis:'SOP' },
+  { reg:'OFF-2025-0988', subjek:'Offering — Siti Aminah', versi:'-', tglArsip:'20 Feb 2026', alasan:'Kandidat menolak offering (Batal)', jenis:'Offering' }
+];
+
+function renderArsip() {
+  const tbody = document.getElementById('arsip-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = arsipData.map(r => 
+    `<tr>
+      <td class="mono">${r.reg}</td>
+      <td><div style="font-weight:600;color:var(--gray-900);">${r.subjek}</div><div class="muted" style="font-size:11px;">${r.jenis}</div></td>
+      <td><span class="chip chip-gray"><i></i>${r.versi}</span></td>
+      <td class="muted">${r.tglArsip}</td>
+      <td style="color:var(--gray-600);">${r.alasan}</td>
+      <td><span class="status-ringkas cancel">Archived</span></td>
+    </tr>`
+  ).join('');
+}
+  async function init(){
+    await reloadOfferingIntoQueue();
+    var templates = await getCollection('document_templates', seedDocumentTemplates);
+    mtCategories = buildMtCategoriesFromTemplates_(templates);
+    renderPinnedDocs();
+    renderBdJenisList();
+    renderDashboard();
+    rrRenderList();
+    rrRenderDetail();
+    renderMtKategoriList();
+    renderMtJenisList();
+    renderMtDetail();
+    renderKontrolDokumen();
+    renderRepoTree();
+    renderRepoFiles();
+    renderArsip();
+  }
+  DasariaAuth.ready().then(function(){ return init(); });
+
+  // ===== Master Template: resize kolom Kategori/Jenis Dokumen (drag), lebar tersimpan lintas kunjungan =====
+  (function initMtColumnResize(){
+    const paneKat = document.getElementById('mt-pane-kategori');
+    const paneJenis = document.getElementById('mt-pane-jenis');
+    const handle1 = document.getElementById('mt-resize-1');
+    const handle2 = document.getElementById('mt-resize-2');
+    if(!paneKat || !paneJenis || !handle1 || !handle2) return;
+    try{
+      const saved = JSON.parse(localStorage.getItem('dasaria-mt-col-widths') || 'null');
+      if(saved && saved.kategori) paneKat.style.width = saved.kategori + 'px';
+      if(saved && saved.jenis) paneJenis.style.width = saved.jenis + 'px';
+    }catch(e){}
+    function persist(){
+      try{ localStorage.setItem('dasaria-mt-col-widths', JSON.stringify({ kategori: Math.round(paneKat.getBoundingClientRect().width), jenis: Math.round(paneJenis.getBoundingClientRect().width) })); }catch(e){}
+    }
+    function bindHandle(handle, pane, min, max){
+      handle.addEventListener('mousedown', function(e){
+        e.preventDefault();
+        const startX = e.clientX;
+        const startWidth = pane.getBoundingClientRect().width;
+        handle.classList.add('dragging');
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+        function onMove(ev){
+          const next = Math.min(max, Math.max(min, startWidth + (ev.clientX - startX)));
+          pane.style.width = next + 'px';
+        }
+        function onUp(){
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          handle.classList.remove('dragging');
+          document.body.style.userSelect = '';
+          document.body.style.cursor = '';
+          persist();
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    }
+    bindHandle(handle1, paneKat, 160, 420);
+    bindHandle(handle2, paneJenis, 180, 480);
+  })();
+
+  // Deep-link support: document.html#dashboard | #buatdokumen | #reviewriwayat | #mastertemplate | #kontroldokumen | #repository
+  (function(){
+    const key = location.hash.replace('#','');
+    if(pageLabels[key]){
+      const navEl = document.querySelector('.menu-item[data-page="' + key + '"]');
+      if(navEl) goPage(key, navEl);
+    }
+  })();
+</script>
+<script src="auth-guard.js"></script>
+<script src="rbac-guard.js"></script>
+<script src="sidebar-toggle.js"></script>
+<script src="sidebar-badges.js"></script>
+</body>
+</html>
