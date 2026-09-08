@@ -1,0 +1,85 @@
+// Konfigurasi project Firebase Dasaria.
+//
+// Cara mengaktifkan (sekali saja, gratis, tanpa kartu kredit):
+//   1. Buka https://console.firebase.google.com -> "Add project" (paket Spark/gratis).
+//   2. Di dalam project itu: Project settings -> General -> "Add app" -> pilih ikon Web (</>).
+//   3. Firebase akan menampilkan object "firebaseConfig" -> salin nilainya ke bawah ini,
+//      menggantikan seluruh placeholder "GANTI_SETELAH_BUAT_PROJECT...".
+//   4. Aktifkan Firestore: menu Build -> Firestore Database -> Create database (mode production).
+//   5. Simpan file ini, refresh halaman. Selesai — semua halaman HC otomatis pindah dari
+//      data contoh (localStorage) ke data sungguhan di Firestore, tanpa perlu ubah kode lain.
+//
+// Sebelum diisi, seluruh halaman TETAP BISA dibuka dan dicoba seperti biasa —
+// data disimpan sementara di browser (localStorage), bukan hilang/error.
+//
+// Ditulis sebagai script biasa (bukan ES module) supaya halaman tetap bisa dibuka
+// langsung dengan dobel-klik (file://), sama seperti seluruh halaman HC lainnya.
+
+var firebaseConfig = {
+  apiKey: "AIzaSyB0Vnpj0SyGo3UPPKmSeUvl4u4xmIlM8VU",
+  authDomain: "hris-dasaria.firebaseapp.com",
+  projectId: "hris-dasaria",
+  storageBucket: "hris-dasaria.firebasestorage.app",
+  messagingSenderId: "885764259023",
+  appId: "1:885764259023:web:18f85ef7258a5957600bba"
+};
+
+var isConfigured = firebaseConfig.apiKey !== "GANTI_SETELAH_BUAT_PROJECT" && !!firebaseConfig.apiKey;
+
+// Simulasi lokal (Firebase Emulator Suite) -- jalankan ESS/start-simulasi-lokal.bat untuk pakai.
+//
+// Kalau mockup ini dibuka lewat http://localhost:5000 (hosting emulator), otomatis sambungkan
+// ke Firestore & Auth emulator (jalan di komputer sendiri) alih-alih ke project ASLI --
+// walau firebaseConfig di atas menunjuk ke project sungguhan. Tujuannya supaya tidak mungkin
+// coba-coba/isi data dummy nyasar ke data sungguhan/kuota asli, bahkan kalau lupa mode apa
+// yang sedang aktif. Dibuka lewat file:// (dobel-klik) atau domain hosting asli tetap ke
+// project sungguhan seperti biasa -- yang berubah HANYA saat hostname persis "localhost".
+var USE_LOCAL_EMULATOR = isConfigured && (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '::1');
+
+/** Panggil ini (bukan firebase.initializeApp langsung) di setiap titik yang menginisialisasi Firebase. */
+function dasariaInitFirebase() {
+  if (dasariaInitFirebase._done) return;
+  dasariaInitFirebase._done = true;
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  if (USE_LOCAL_EMULATOR) {
+    if (firebase.firestore) firebase.firestore().useEmulator('127.0.0.1', 8080);
+    if (firebase.auth) firebase.auth().useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
+  }
+}
+
+/**
+ * Buat akun login (Firebase Authentication) baru untuk staf HC, dari halaman Manajemen
+ * Pengguna -- TANPA mengganti sesi admin yang sedang login saat ini.
+ *
+ * Kenapa perlu trik ini: firebase.auth().createUserWithEmailAndPassword() versi biasa
+ * otomatis PINDAH sesi login browser ke akun yang baru dibuat (perilaku bawaan SDK client,
+ * bukan bug) -- kalau dipakai langsung, admin yang lagi menambah pengguna akan ke-logout
+ * dari akunnya sendiri. Solusinya: buat instance Firebase KEDUA (nama unik, sementara) khusus
+ * untuk operasi create-user ini, lalu buang instance itu segera setelah selesai -- sesi admin
+ * di instance utama (firebase.auth() biasa) sama sekali tidak tersentuh.
+ *
+ * Reject dengan error asli dari Firebase Auth (err.code, mis. 'auth/email-already-in-use',
+ * 'auth/weak-password') kalau gagal -- pemanggil yang menerjemahkan ke pesan Bahasa Indonesia.
+ */
+function dasariaCreateAuthUser(email, password) {
+  var secondaryApp = firebase.initializeApp(firebaseConfig, 'dasaria-secondary-' + Date.now());
+  if (USE_LOCAL_EMULATOR) secondaryApp.auth().useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
+  return secondaryApp.auth().createUserWithEmailAndPassword(email, password)
+    .then(function (cred) {
+      return secondaryApp.auth().signOut()
+        .then(function () { return secondaryApp.delete(); })
+        .then(function () { return cred.user; });
+    })
+    .catch(function (err) {
+      return secondaryApp.delete().catch(function () {}).then(function () { throw err; });
+    });
+}
+
+/** Isi badge status koneksi data di topbar (elemen id="data-mode-badge") -- sama di semua halaman HC. */
+function dasariaRenderDataModeBadge() {
+  var el = document.getElementById('data-mode-badge');
+  if (!el) return;
+  if (USE_LOCAL_EMULATOR) { el.textContent = '🔵 Simulasi lokal'; el.className = 'data-mode emulator'; }
+  else if (isConfigured) { el.textContent = '🟢 Firestore live'; el.className = 'data-mode live'; }
+  else { el.textContent = '🟡 Mode demo (localStorage)'; el.className = 'data-mode demo'; }
+}

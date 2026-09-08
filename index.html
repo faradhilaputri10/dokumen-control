@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 
+      Meta tag 'refresh' ini adalah cara paling sederhana untuk melakukan redirect di HTML.
+      - 'content="0;' berarti halaman akan dialihkan setelah 0 detik (langsung).
+      - 'url=hc/document.html"' menentukan tujuan alihan. 
+      
+      Karena file ini (index.html) berada di D:\Dokumen Kontrol\
+      dan tujuan kita adalah D:\Dokumen Kontrol\hc\document.html
+      maka URL relatifnya adalah hc/document.html
+    -->
+    <meta http-equiv="refresh" content="0; url=hc/document.html">
+
+    <title>Mengalihkan Halaman...</title>
+
+    <style>
+        /* Gaya ini hanya untuk tampilan sementara saat halaman memuat */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+        }
+        .message {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Pesan ini akan muncul jika browser pengguna tidak mendukung meta refresh atau berjalan lambat -->
+    <div class="message">
+        <p>Anda sedang dialihkan ke dokumen...</p>
+        <p>Jika halaman tidak beralih secara otomatis, <a href="hc/document.html">klik di sini</a>.</p>
+    </div>
+
+    <script>
+        // Ini adalah cara kedua untuk redirect menggunakan JavaScript,
+        // sebagai langkah pencegahan jika meta refresh gagal.
+        // window.location.href = "hc/document.html";
+    </script>
+</body>
+</html>
